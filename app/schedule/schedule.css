@@ -1,0 +1,264 @@
+/* The Scheduler's look. Bryntum's theme sets the structure; this gives it the product's colours. */
+
+.b-scheduler {
+  --b-widget-font-family: var(--font-sans);
+  font-family: var(--font-sans);
+}
+
+/* ---------- the crew column */
+
+.crew {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.crew-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.crew-open .crew-avatar {
+  border: 1.5px dashed var(--muted);
+  color: var(--muted);
+  background: transparent;
+}
+
+.crew-text {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.crew-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.crew-sub {
+  margin-top: 0.125rem;
+  font-size: 0.6875rem;
+  color: var(--muted);
+}
+
+.crew-skills {
+  display: flex;
+  gap: 0.25rem;
+  margin-top: 0.1875rem;
+}
+
+.crew-skill {
+  border-radius: 0.25rem;
+  padding: 0 0.25rem;
+  font-size: 0.625rem;
+  line-height: 0.875rem;
+}
+
+.crew-skill.skill-cook { background: #fdebdc; color: #9a4a12; }
+.crew-skill.skill-server { background: #e1eefb; color: #1b5c9c; }
+.crew-skill.skill-bartender { background: #eee7fa; color: #5f3ea5; }
+.crew-skill.skill-driver { background: #dcf3ef; color: #12695e; }
+
+.crew-hours {
+  flex: none;
+  width: 3rem;
+  text-align: right;
+}
+
+.crew-hours-text {
+  font-size: 0.6875rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.crew-meter {
+  height: 0.1875rem;
+  margin-top: 0.1875rem;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.crew-meter i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--brand);
+}
+
+/* ---------- shift bars */
+
+.b-sch-event .shift-first {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.b-sch-event .shift-first i {
+  font-size: 0.625rem;
+}
+
+.b-sch-event .shift-pin {
+  margin-left: auto;
+}
+
+.b-sch-event .shift-second {
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.b-sch-event-content {
+  display: block !important;
+  min-width: 0;
+  width: 100%;
+  margin: 0 !important;
+}
+
+.b-sch-event {
+  padding-inline: 0.3125rem !important;
+}
+
+/* Nobody has this one yet. */
+.b-sch-event.shift-open {
+  background: transparent !important;
+  border: 1.5px dashed currentColor;
+}
+
+.shift-line {
+  font-size: 0.6875rem;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The assistant just moved this one. */
+.b-sch-event.shift-moved {
+  box-shadow: 0 0 0 2px var(--brand), 0 0 14px color-mix(in srgb, var(--brand) 55%, transparent);
+  animation: shift-settle 7s ease-out forwards;
+}
+
+@keyframes shift-settle {
+  0%, 60% { box-shadow: 0 0 0 2px var(--brand), 0 0 14px color-mix(in srgb, var(--brand) 55%, transparent); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+.b-sch-event.shift-paying {
+  animation: shift-paying 1.4s ease-in-out infinite;
+}
+
+@keyframes shift-paying {
+  50% { opacity: 0.6; }
+}
+
+/* ---------- blocked time and the clock */
+
+.b-sch-resource-time-range {
+  background: repeating-linear-gradient(135deg, rgba(100, 116, 139, 0.16) 0 6px, rgba(100, 116, 139, 0.06) 6px 12px) !important;
+  color: var(--muted) !important;
+  font-size: 0.6875rem;
+}
+
+/* ---------- the time axis */
+
+.b-scheduler .b-sch-header-text {
+  font-size: 0.75rem;
+}
+
+.b-sch-header-row-0 .b-sch-header-timeaxis-cell {
+  font-weight: 600;
+}
+
+.b-sch-header-timeaxis-cell.is-today {
+  color: var(--brand);
+}
+
+/* ---------- tooltip */
+
+.tip-note {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.tip-why {
+  margin-top: 0.375rem;
+  padding-top: 0.375rem;
+  border-top: 1px solid rgba(127, 127, 127, 0.3);
+  font-size: 0.75rem;
+}
+
+/* ---------- the assistant's panel */
+
+.chat-dock {
+  overflow: hidden;
+}
+
+/* Bryntum makes this a floating popup; here it sits beside the schedule, and the header button opens it. */
+.chat-dock .b-chat-popup {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: 100% !important;
+  max-height: none !important;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.chat-dock .b-panel-header {
+  padding-block: 0.5rem;
+}
+
+.chat-dock .b-header-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.b-chat-button,
+.chat-dock [data-ref='settingsTool'],
+.chat-dock [data-ref='close'],
+.chat-dock .b-popup-close,
+.chat-dock .b-ai-context-chip {
+  display: none !important;
+}
+
+/* ---------- notices */
+
+.notice {
+  animation: notice-in 0.25s ease-out;
+}
+
+@keyframes notice-in {
+  from { opacity: 0; transform: translateY(8px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .b-sch-event.shift-moved,
+  .b-sch-event.shift-paying,
+  .notice {
+    animation: none;
+  }
+}

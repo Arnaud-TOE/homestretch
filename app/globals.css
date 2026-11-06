@@ -1,0 +1,22 @@
+@import 'tailwindcss';
+
+:root {
+  --paper: #faf7f2;
+  --ink: #1d2733;
+  --muted: #5e6b78;
+  --line: #e6e2da;
+  --wash: #f3efe8;
+  --brand: #0d7a5f;
+  --brand-dark: #0a6049;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
