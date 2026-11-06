@@ -51,7 +51,7 @@ function crewCell(board: Board, record: Model) {
       {
         class: 'crew-text',
         children: [
-          { class: 'crew-name', text: resource.name },
+          { tag: 'a', class: 'crew-name', href: `/crew/${resource.id}`, target: '_blank', text: resource.name, dataset: { btip: `See ${resource.name.split(' ')[0]}'s phone` } },
           {
             class: 'crew-skills',
             children: resource.skills.map((skill) => ({ tag: 'span', class: `crew-skill skill-${skill.toLowerCase()}`, text: skill })),
@@ -137,13 +137,14 @@ function agentTools(board: Board) {
         available: true,
         properties: tool.properties as never,
         required: tool.required,
+        statusDescription: tool.status,
         fn: (async ({ args }: { args: Record<string, unknown> }) => {
-          const outcome = tool.run(board.snapshot(), args ?? {}, wallClock());
-          if (outcome.failed) return outcome.reply;
+          const outcome = tool.run(board.snapshot(), args ?? {}, wallClock(), { balance: board.balance });
+          if (outcome.failed) return AIHelper.error(outcome.reply);
           await board.apply(outcome.effects);
           return outcome.reply;
         }) as never,
-      },
+      } as never,
       tool.status,
     );
   }
@@ -155,6 +156,17 @@ const INTRO = `<p>I run this schedule with you. Ask me to staff a job, or tell m
 function buildConfig(board: Board, dock: HTMLElement, actions: { pay: (shiftId: string) => void; notify: (message: string) => void }) {
   const { start, end, today } = board.timeline;
   const fromEvent = (record: EventModel): Shift | undefined => board.snapshot().shifts.find((s) => s.id === record.id);
+
+  /** Whether a shift can go to this row, in the words of the rules. */
+  const dropVerdict = (record: EventModel, target: ResourceModel): { valid: boolean; message: string } => {
+    if (target.id === OPEN_ROW) return { valid: true, message: 'Back to the open row' };
+    const schedule = board.snapshot();
+    const shift = schedule.shifts.find((s) => s.id === record.id);
+    const worker = schedule.workers.find((w) => w.id === target.id);
+    if (!shift || !worker) return { valid: false, message: "That shift can't go there." };
+    const problems = whyNot(schedule, shift, worker);
+    return problems.length > 0 ? { valid: false, message: problems[0].message } : { valid: true, message: `${worker.name} can take it` };
+  };
 
   return {
     startDate: start,
@@ -218,15 +230,11 @@ function buildConfig(board: Board, dock: HTMLElement, actions: { pay: (shiftId: 
     eventDragFeature: {
       // A job's hours come from the client: shifts change hands, not times.
       constrainDragToTimeSlot: true,
-      validatorFn: ({ eventRecords, newResource }: { eventRecords: EventModel[]; newResource: ResourceModel }) => {
-        const shift = fromEvent(eventRecords[0]);
-        if (!shift) return false;
-        if (newResource.id === OPEN_ROW) return { valid: true, message: 'Back to the open row' };
-        const schedule = board.snapshot();
-        const worker = schedule.workers.find((w) => w.id === newResource.id);
-        if (!worker) return false;
-        const problems = whyNot(schedule, shift, worker);
-        return problems.length > 0 ? { valid: false, message: problems[0].message } : { valid: true, message: `${worker.name} can take it` };
+      validatorFn: ({ eventRecords, newResource }: { eventRecords: EventModel[]; newResource: ResourceModel }) => dropVerdict(eventRecords[0], newResource),
+      // The time can't change here, so the rule's answer is all the tooltip needs to say.
+      tooltipTemplate: ({ eventRecord, newResource }: { eventRecord: EventModel; newResource: ResourceModel }) => {
+        const { valid, message } = dropVerdict(eventRecord, newResource);
+        return `<div class="drag-tip ${valid ? 'drag-ok' : 'drag-no'}"><i class="fa ${valid ? 'fa-check' : 'fa-ban'}"></i> ${StringHelper.encodeHtml(message)}</div>`;
       },
     },
     eventResizeFeature: false,
@@ -292,6 +300,7 @@ function buildConfig(board: Board, dock: HTMLElement, actions: { pay: (shiftId: 
       redo: true,
       timeout: 90_000,
       delayStatusTexts: ['Thinking it through', 'Still working on it'],
+      minStatusDisplayTime: 700,
       tools: agentTools(board),
       trainingData: AGENT_EXAMPLES,
       chatButton: {

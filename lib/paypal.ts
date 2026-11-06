@@ -122,6 +122,15 @@ export async function getPayoutBatch(batchId: string): Promise<{ status: string;
   };
 }
 
+/** What the account can pay out, in dollars. PayPal refreshes this figure every so often: `asOf` says when it last did. */
+export async function getAvailableBalance(): Promise<{ available: number; asOf: string }> {
+  const answer = await request<{ as_of_time?: string; balances?: { currency: string; available_balance?: { value?: string } }[] }>('GET', '/v1/reporting/balances?currency_code=USD');
+  return {
+    available: Number(answer.balances?.find((b) => b.currency === 'USD')?.available_balance?.value ?? 0),
+    asOf: answer.as_of_time ?? new Date().toISOString(),
+  };
+}
+
 /** Whether PayPal answers with these credentials, for the health check. */
 export async function canReachPayPal(): Promise<boolean> {
   await accessToken();

@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_MODEL, dropForbiddenCalls, shapeForModel } from '@/lib/assistant';
-import { CallLimiter, isSameOrigin } from '@/lib/guard';
+import { CallLimiter, DailyBudget, isSameOrigin } from '@/lib/guard';
 import { payoutRequest, priceShifts } from '@/lib/payouts';
+import { balanceAfterPayments, withPayments, type LedgerEntry } from '@/lib/schedule/saved';
+import type { Shift } from '@/lib/schedule/types';
 
 const shift = { shiftId: 'okafor-1', workerId: 'lena', job: 'Okafor dinner', skill: 'Cook' as const, hours: 6 };
 
@@ -87,6 +89,47 @@ describe('the tools the model gets', () => {
   });
 });
 
+describe('the record of payments', () => {
+  const entry = (over: Partial<LedgerEntry>): LedgerEntry => ({
+    shiftId: 's1',
+    workerId: 'lena',
+    workerName: 'Lena Ortiz',
+    job: 'Dinner',
+    skill: 'Cook',
+    hours: 6,
+    rate: 24,
+    amount: 144,
+    fee: 0.25,
+    status: 'SUCCESS',
+    batchId: 'B1',
+    transactionId: 'T1',
+    sentAt: '2026-11-06T12:00:00.000Z',
+    run: 1,
+    ...over,
+  });
+  const shift: Shift = { id: 's1', job: 'Dinner', skill: 'Cook', start: '2026-11-05T16:00:00.000Z', end: '2026-11-05T22:00:00.000Z', workerId: 'lena', pinned: false };
+
+  it('gives a shift its payment from the ledger', () => {
+    expect(withPayments([shift], [entry({})], 1)[0].payment).toMatchObject({ batchId: 'B1', amount: 144, status: 'SUCCESS' });
+  });
+
+  it('makes a shift payable again when PayPal failed to pay it', () => {
+    expect(withPayments([shift], [entry({ status: 'FAILED' })], 1)[0].payment).toBeUndefined();
+  });
+
+  it('forgets payments from before the demo was reset, without losing them', () => {
+    expect(withPayments([shift], [entry({ run: 1 })], 2)[0].payment).toBeUndefined();
+  });
+
+  it('takes payments sent since PayPal last counted off the balance', () => {
+    const reported = { available: 1000, asOf: '2026-11-06T10:00:00.000Z' };
+    expect(balanceAfterPayments(reported, [entry({})])).toBe(855.75);
+    expect(balanceAfterPayments(reported, [entry({ status: 'SENDING', fee: null })])).toBe(856);
+    expect(balanceAfterPayments(reported, [entry({ status: 'FAILED' })])).toBe(1000);
+    expect(balanceAfterPayments({ ...reported, asOf: '2026-11-06T13:00:00.000Z' }, [entry({})])).toBe(1000);
+  });
+});
+
 describe('guards', () => {
   it('limits calls per key, and frees them with time', () => {
     const limiter = new CallLimiter(1, 1000);
@@ -94,6 +137,16 @@ describe('guards', () => {
     expect(limiter.hit('a', 10)).toBe(false);
     expect(limiter.hit('b', 10)).toBe(true);
     expect(limiter.hit('a', 1000)).toBe(true);
+  });
+
+  it('stops spending at the daily limit, and starts again the next day', () => {
+    const budget = new DailyBudget(100);
+    const today = new Date('2026-11-06T12:00:00Z');
+    expect(budget.spend(60, today)).toBe(true);
+    expect(budget.spend(60, today)).toBe(false);
+    expect(budget.spend(40, today)).toBe(true);
+    expect(budget.spend(1, today)).toBe(false);
+    expect(budget.spend(100, new Date('2026-11-07T00:01:00Z'))).toBe(true);
   });
 
   const request = (headers: Record<string, string>) => new Request('https://homestretch.example/api', { method: 'POST', headers });

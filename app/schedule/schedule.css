@@ -1,8 +1,7 @@
 /* The Scheduler's look. Bryntum's theme sets the structure; this gives it the product's colours. */
 
-.b-scheduler {
-  --b-widget-font-family: var(--font-sans);
-  font-family: var(--font-sans);
+:root:not(.b-nothing):not(.b-nothing-else) {
+  --b-primary: var(--brand);
 }
 
 /* ---------- the crew column */
@@ -40,12 +39,17 @@
 }
 
 .crew-name {
+  display: block;
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+a.crew-name:hover {
+  text-decoration: underline;
 }
 
 .crew-sub {
@@ -191,6 +195,26 @@
 
 .b-sch-header-timeaxis-cell.is-today {
   color: var(--brand);
+}
+
+/* ---------- dragging a shift */
+
+.drag-tip {
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.drag-ok {
+  color: var(--brand);
+}
+
+.drag-no {
+  color: #b42318;
+}
+
+.b-drag-invalid .b-sch-event {
+  outline: 2px solid #d92d20;
+  outline-offset: 1px;
 }
 
 /* ---------- tooltip */

@@ -69,6 +69,13 @@ export function shapeForModel(body: { messages: ChatMessage[]; tools?: Tool[]; t
   };
 }
 
+/** A message for the chat panel, in the shape of a model's answer: the panel shows a failed request only as "(failed)". */
+export const assistantSays = (content: string) => ({
+  id: 'homestretch-notice',
+  object: 'chat.completion',
+  choices: [{ index: 0, finish_reason: 'stop', message: { role: 'assistant', content } }],
+});
+
 type ModelAnswer = { choices?: { finish_reason?: string; message?: { content?: string | null; tool_calls?: Tool[] } }[] };
 
 /** Holds a model to the tools it was offered: a call to anything else never reaches the browser. */

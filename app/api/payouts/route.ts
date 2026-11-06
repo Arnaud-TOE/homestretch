@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   const priced = priceShifts(parsed.data);
   if ('error' in priced) return error(400, priced.error);
 
-  const refusal = payoutRefusal(request);
+  const refusal = payoutRefusal(priced.priced.reduce((sum, shift) => sum + shift.amount, 0));
   if (refusal) return error(429, refusal);
 
   try {
@@ -27,6 +27,7 @@ export async function POST(request: Request) {
     return Response.json({ batchId, status, items: priced.priced.map(({ shiftId, amount }) => ({ shiftId, amount })) });
   } catch (cause) {
     console.error('[payouts] PayPal refused the batch', cause instanceof PayPalApiError ? cause.body : cause);
+    if (cause instanceof PayPalApiError && cause.body.includes('INSUFFICIENT_FUNDS')) return error(402, 'The sandbox account behind this demo is out of funds, so nobody was paid.');
     return error(502, 'PayPal could not send this payment. Nobody has been paid.');
   }
 }

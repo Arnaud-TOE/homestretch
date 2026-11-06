@@ -37,14 +37,30 @@ export function modelCallRefusal(request: Request): string | null {
   return null;
 }
 
-const payoutsPerDay = new CallLimiter(Number(process.env.PAYOUTS_PER_DAY) || 120, DAY_MS);
+/** Keeps one day of visitors from emptying the sandbox account that the demo's payments come from. */
+export class DailyBudget {
+  private day = '';
+  private spent = 0;
 
-export function payoutRefusal(request: Request, batches = 1): string | null {
-  void request;
-  for (let i = 0; i < batches; i++) {
-    if (!payoutsPerDay.hit('all')) return "The demo's sandbox payouts for today are used up. They reset within a day.";
+  constructor(private readonly limit: number) {}
+
+  /** Takes `amount` from today's budget, or says no and takes nothing. */
+  spend(amount: number, now = new Date()): boolean {
+    const today = now.toISOString().slice(0, 10);
+    if (today !== this.day) {
+      this.day = today;
+      this.spent = 0;
+    }
+    if (this.spent + amount > this.limit) return false;
+    this.spent += amount;
+    return true;
   }
-  return null;
+}
+
+const payoutBudget = new DailyBudget(Number(process.env.PAYOUT_DOLLARS_PER_DAY) || 2500);
+
+export function payoutRefusal(amount: number): string | null {
+  return payoutBudget.spend(amount) ? null : "The demo's sandbox budget for today is used up, so nobody was paid. It resets tomorrow; the demo video shows payments at work.";
 }
 
 /** Whether the request comes from a page of this site. Browsers always send Origin on a POST. */

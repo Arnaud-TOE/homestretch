@@ -19,7 +19,8 @@ export default function ScheduleApp() {
   const [board] = useState(() => new Board());
   const view = useSyncExternalStore(board.subscribe, board.getView, board.getView);
   const [notices, setNotices] = useState<Notice[]>([]);
-  const [panelOpen, setPanelOpen] = useState(true);
+  // On a short screen the crew comes first: the panel's tab says what is waiting.
+  const [panelOpen, setPanelOpen] = useState(() => window.innerHeight >= 900);
   const [tab, setTab] = useState<'ready' | 'ledger'>('ready');
   // The assistant's panel lives beside the schedule, so the Scheduler needs this element when it starts.
   const [dock, setDock] = useState<HTMLElement | null>(null);
@@ -47,7 +48,8 @@ export default function ScheduleApp() {
 
   return (
     <div className="flex h-dvh flex-col bg-[var(--paper)] text-[var(--ink)]">
-      <header className="flex h-14 shrink-0 items-center gap-6 border-b border-[var(--line)] bg-white px-4">
+      <p className="bg-amber-50 px-4 py-2 text-sm text-amber-900 lg:hidden">This schedule is built for a bigger screen. On a phone, try the <Link className="underline" href="/crew/theo">worker&rsquo;s view</Link>.</p>
+      <header className="flex h-14 shrink-0 items-center gap-6 overflow-x-auto border-b border-[var(--line)] bg-white px-4">
         <Link href="/" className="flex items-center gap-2 font-display text-lg font-semibold tracking-tight">
           <Logo className="size-6" />
           Homestretch
@@ -57,6 +59,7 @@ export default function ScheduleApp() {
           <Stat label="Open shifts" value={String(view.open)} />
           <Stat label="To approve" value={usd(view.readyTotal)} tone={view.readyTotal > 0 ? 'amber' : undefined} />
           <Stat label="Paid today" value={usd(paidToday.reduce((sum, entry) => sum + entry.amount, 0))} tone={paidToday.length > 0 ? 'green' : undefined} />
+          {view.balance !== null && <Stat label="PayPal balance" value={usd(view.balance)} />}
         </dl>
         <span className="rounded-full border border-[var(--line)] px-2.5 py-1 text-xs text-[var(--muted)]" title="Every payment here runs on the PayPal sandbox. No real money moves.">
           PayPal sandbox

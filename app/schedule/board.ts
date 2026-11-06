@@ -7,7 +7,8 @@ import { EventModel, ResourceModel, type ColumnStore, type ResourceTimeRangeStor
 import type { Effects } from '@/lib/schedule/agent';
 import { demoSchedule, TIMELINE, WORKERS } from '@/lib/schedule/demo';
 import { isReadyToPay, shiftHours, shiftPay } from '@/lib/schedule/rules';
-import type { Blocked, Payment, Schedule, Shift, Skill, Worker } from '@/lib/schedule/types';
+import { balanceAfterPayments, FINAL_STATUSES, loadSaved, NOT_PAID_STATUSES, storeSaved, withPayments, type LedgerEntry } from '@/lib/schedule/saved';
+import type { Blocked, Schedule, Shift, Skill, Worker } from '@/lib/schedule/types';
 import { dayKey, toLocalDate, toWallIso, wallClock } from '@/lib/schedule/wall-clock';
 
 /** The row at the top of the Scheduler for shifts nobody has yet. */
@@ -39,53 +40,12 @@ export class CrewMember extends ResourceModel {
   declare maxWeeklyHours: number;
 }
 
-export type LedgerEntry = {
-  shiftId: string;
-  workerName: string;
-  job: string;
-  skill: Skill;
-  hours: number;
-  rate: number;
-  amount: number;
-  fee: number | null;
-  /** SENDING until PayPal has the batch, then PayPal's own status. */
-  status: string;
-  batchId: string;
-  transactionId: string | null;
-  sentAt: string;
-  /** Which run of the demo it belongs to: resetting the demo makes its shifts payable again. */
-  run: number;
-};
-
-/** Statuses after which PayPal won't change its mind. */
-const FINAL = new Set(['SUCCESS', 'FAILED', 'RETURNED', 'BLOCKED', 'REFUNDED', 'REVERSED', 'DENIED', 'CANCELED']);
-const NOT_PAID = new Set(['FAILED', 'RETURNED', 'BLOCKED', 'REFUNDED', 'REVERSED', 'DENIED', 'CANCELED']);
-
 const POLL_MS = 2500;
 const POLL_FOR_MS = 3 * 60_000;
 const MOVE_PAUSE_MS = 280;
 const GLOW_MS = 7000;
 
-type Saved = { day: string; run: number; shifts: Shift[]; blocked: Blocked[]; ledger: LedgerEntry[] };
-
-const STORAGE_KEY = 'homestretch:v1';
-
-function load(): Saved | null {
-  try {
-    const text = localStorage.getItem(STORAGE_KEY);
-    return text ? (JSON.parse(text) as Saved) : null;
-  } catch {
-    return null;
-  }
-}
-
-function save(saved: Saved) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
-  } catch {
-    // Private windows may refuse: the demo still works until the page closes.
-  }
-}
+export type { LedgerEntry };
 
 export type View = {
   schedule: Schedule;
@@ -93,6 +53,8 @@ export type View = {
   readyTotal: number;
   open: number;
   ledger: LedgerEntry[];
+  /** The PayPal balance that pays for all this, once PayPal has answered. */
+  balance: number | null;
   now: Date;
 };
 
@@ -116,6 +78,7 @@ export class Board {
   scheduler?: Scheduler;
   ledger: LedgerEntry[];
   run: number;
+  private reportedBalance: { available: number; asOf: string } | null = null;
   /** Shifts the assistant has just moved: they glow for a moment. */
   readonly glowing = new Set<string>();
   /** What the Scheduler starts with. */
@@ -132,7 +95,7 @@ export class Board {
   constructor() {
     const now = wallClock();
     const today = dayKey(now);
-    const saved = load();
+    const saved = loadSaved();
     const fresh = demoSchedule(now);
     const current = saved?.day === today ? saved : null;
     this.initial = current ? { shifts: current.shifts, blocked: current.blocked } : { shifts: fresh.shifts, blocked: fresh.blocked };
@@ -144,6 +107,10 @@ export class Board {
     this.timeline = { start: dayAt(TIMELINE.firstDay), end: dayAt(TIMELINE.firstDay + TIMELINE.days), today: dayAt(0) };
 
     this.view = this.buildView({ workers: WORKERS, shifts: this.withPayments(this.initial.shifts), blocked: this.initial.blocked });
+  }
+
+  get balance() {
+    return this.reportedBalance && balanceAfterPayments(this.reportedBalance, this.ledger);
   }
 
   // ---------------- for React
@@ -192,12 +159,13 @@ export class Board {
       readyTotal: ready.reduce((sum, shift) => sum + shiftPay(shift, schedule.workers.find((w) => w.id === shift.workerId)!), 0),
       open: schedule.shifts.filter((s) => !s.workerId).length,
       ledger: this.ledger,
+      balance: this.balance,
     };
   }
 
   private persist() {
     const { shifts, blocked } = this.view.schedule;
-    save({ day: dayKey(this.view.now), run: this.run, shifts: shifts.map(withoutPayment), blocked, ledger: this.ledger });
+    storeSaved({ day: dayKey(this.view.now), run: this.run, shifts: shifts.map(withoutPayment), blocked, ledger: this.ledger });
   }
 
   // ---------------- the Scheduler
@@ -215,7 +183,8 @@ export class Board {
     scheduler.eventStore.on('change', changed);
     rangesOf(scheduler).on('change', changed);
     this.notify();
-    for (const batchId of new Set(this.ledger.filter((e) => e.batchId && !FINAL.has(e.status)).map((e) => e.batchId))) void this.watch(batchId);
+    void this.refreshBalance();
+    for (const batchId of new Set(this.ledger.filter((e) => e.batchId && !FINAL_STATUSES.has(e.status)).map((e) => e.batchId))) void this.watch(batchId);
 
     // A shift that ends while the page is open becomes payable.
     const tick = setInterval(() => {
@@ -253,14 +222,8 @@ export class Board {
     return { workers: WORKERS, shifts: this.withPayments(shifts), blocked };
   }
 
-  /** Payments are facts, not edits: undo leaves them alone, so they live in the ledger rather than the store. */
-  private withPayments(shifts: Shift[]): Shift[] {
-    const payments = new Map<string, Payment>();
-    for (const entry of this.ledger) {
-      if (entry.run !== this.run || NOT_PAID.has(entry.status)) continue;
-      payments.set(entry.shiftId, { batchId: entry.batchId, amount: entry.amount, status: entry.status, paidAt: entry.sentAt });
-    }
-    return shifts.map((shift) => (payments.has(shift.id) ? { ...shift, payment: payments.get(shift.id) } : shift));
+  private withPayments(shifts: Shift[]) {
+    return withPayments(shifts, this.ledger, this.run);
   }
 
   private repaint() {
@@ -325,6 +288,7 @@ export class Board {
       const worker = schedule.workers.find((w) => w.id === shift.workerId)!;
       return {
         shiftId: shift.id,
+        workerId: worker.id,
         workerName: worker.name,
         job: shift.job,
         skill: shift.skill,
@@ -393,14 +357,22 @@ export class Board {
       });
       const settled = this.ledger.filter((e) => e.batchId === batchId);
       const justPaid = settled.filter((e) => e.status === 'SUCCESS' && before.get(`${e.batchId}:${e.shiftId}`) !== 'SUCCESS');
-      const justFailed = settled.filter((e) => NOT_PAID.has(e.status) && !NOT_PAID.has(before.get(`${e.batchId}:${e.shiftId}`) ?? ''));
+      const justFailed = settled.filter((e) => NOT_PAID_STATUSES.has(e.status) && !NOT_PAID_STATUSES.has(before.get(`${e.batchId}:${e.shiftId}`) ?? ''));
       this.notify();
       this.repaint();
-      for (const entry of justPaid) this.tell('paid', `${entry.workerName} just got $${entry.amount.toFixed(2)} through PayPal.`);
+      if (justPaid.length === 1) this.tell('paid', `${justPaid[0].workerName} just got $${justPaid[0].amount.toFixed(2)} through PayPal.`);
+      if (justPaid.length > 1) this.tell('paid', `${justPaid.length} payments just landed through PayPal: $${justPaid.reduce((sum, e) => sum + e.amount, 0).toFixed(2)}.`);
       for (const entry of justFailed) this.tell('error', `PayPal could not pay ${entry.workerName} (${entry.status.toLowerCase()}). The shift is waiting for approval again.`);
-      if (settled.length > 0 && settled.every((e) => FINAL.has(e.status))) break;
+      if (settled.length > 0 && settled.every((e) => FINAL_STATUSES.has(e.status))) break;
     }
     this.watching.delete(batchId);
+  }
+
+  private async refreshBalance() {
+    const response = await fetch('/api/balance').catch(() => null);
+    if (!response?.ok) return;
+    this.reportedBalance = (await response.json()) as { available: number; asOf: string };
+    this.notify();
   }
 
   // ---------------- starting over

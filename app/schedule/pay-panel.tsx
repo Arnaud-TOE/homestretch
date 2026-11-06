@@ -137,7 +137,11 @@ function ReadyRow({ shift, board, view }: { shift: Shift; board: Board; view: Vi
   const worker = view.schedule.workers.find((w) => w.id === shift.workerId)!;
   return (
     <tr className="border-t border-[var(--line)] hover:bg-[var(--wash)]">
-      <td className="px-4 py-1.5 font-medium">{worker.name}</td>
+      <td className="px-4 py-1.5 font-medium">
+        <a href={`/crew/${worker.id}`} target="_blank" rel="noreferrer" className="hover:underline">
+          {worker.name}
+        </a>
+      </td>
       <td className="px-4 py-1.5">{shift.job}</td>
       <td className="px-4 py-1.5">{shift.skill}</td>
       <td className="px-4 py-1.5 text-[var(--muted)]">{when(shift.end)}</td>

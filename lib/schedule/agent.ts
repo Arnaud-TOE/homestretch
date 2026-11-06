@@ -20,13 +20,19 @@ export type Outcome = { reply: string; failed?: boolean; effects?: Effects };
 
 type Property = { type: string; description: string; items?: Property; properties?: Record<string, Property>; required?: string[] };
 
+/** What the tools know beyond the schedule. */
+export type AgentContext = {
+  /** The PayPal balance, if PayPal has answered. */
+  balance: number | null;
+};
+
 export type AgentTool = {
   description: string;
   /** Shown in the chat panel while the tool runs. */
   status: string;
   properties: Record<string, Property>;
   required: string[];
-  run(schedule: Schedule, args: Record<string, unknown>, now: Date): Outcome;
+  run(schedule: Schedule, args: Record<string, unknown>, now: Date, context?: AgentContext): Outcome;
 };
 
 const refuse = (reply: string): Outcome => ({ reply, failed: true });
@@ -88,6 +94,7 @@ function checkSchedule(schedule: Schedule, _args: Record<string, unknown>, now: 
     jobs: [...jobs].map(([job, shifts]) => ({
       job,
       when: `${readableDate(shifts[0].start)} to ${readableDate(shifts[0].end)}`,
+      payForStaffedShifts: money(payTotal(schedule, shifts)),
       shifts: shifts.map((s) => ({
         id: s.id,
         skill: s.skill,
@@ -219,8 +226,9 @@ function pinShift(schedule: Schedule, args: Record<string, unknown>): Outcome {
   return { reply: `${describeShift(shift)} is ${pinned ? 'pinned to' : 'no longer pinned to'} ${nameOf(schedule, shift.workerId)}.`, effects: { pin: { shiftId: shift.id, pinned } } };
 }
 
-function listReadyToPay(schedule: Schedule, _args: Record<string, unknown>, now: Date): Outcome {
+function listReadyToPay(schedule: Schedule, _args: Record<string, unknown>, now: Date, context?: AgentContext): Outcome {
   const ready = schedule.shifts.filter((s) => isReadyToPay(s, now));
+  const balance = context?.balance ?? null;
   return json(
     {
       shifts: ready.map((s) => {
@@ -228,6 +236,7 @@ function listReadyToPay(schedule: Schedule, _args: Record<string, unknown>, now:
         return { worker: worker.name, shift: describeShift(s), hours: shiftHours(s), rate: worker.hourlyRate, pay: money(shiftPay(s, worker)) };
       }),
       total: money(payTotal(schedule, ready)),
+      ...(balance === null ? {} : { payPalBalance: money(balance), balanceCoversIt: balance >= payTotal(schedule, ready) }),
       note: 'You cannot pay anyone. The owner approves these with the Approve and pay button, and PayPal then pays each person.',
     },
     { showPayments: true },

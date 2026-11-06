@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { AllCommunityModule, ModuleRegistry, themeQuartz, type ColDef, type ICellRendererParams, type ValueFormatterParams } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
-import type { LedgerEntry } from './board';
+import type { LedgerEntry } from '@/lib/schedule/saved';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
