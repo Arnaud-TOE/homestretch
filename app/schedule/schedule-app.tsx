@@ -24,7 +24,7 @@ export default function ScheduleApp() {
   const [tab, setTab] = useState<'ready' | 'ledger'>('ready');
   // The assistant's panel lives beside the schedule, so the Scheduler needs this element when it starts.
   const [dock, setDock] = useState<HTMLElement | null>(null);
-  const [assistantOpen, setAssistantOpen] = useState(true);
+  const [assistantOpen, setAssistantOpen] = useState(() => window.innerWidth >= 1100);
 
   const addNotice = useCallback((notice: Notice) => {
     setNotices((current) => [...current.slice(-3), notice]);

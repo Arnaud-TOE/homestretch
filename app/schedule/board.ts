@@ -384,14 +384,17 @@ export class Board {
     const fresh = demoSchedule(wallClock());
     this.run += 1;
     const stm = stmOf(scheduler);
-    stm.disable();
+    const wasRecording = !stm.disabled;
+    if (wasRecording) stm.disable();
     scheduler.eventStore.removeAll();
     rangesOf(scheduler).removeAll();
     scheduler.eventStore.add(fresh.shifts.map(toEventData));
     rangesOf(scheduler).add(fresh.blocked.map(toRangeData));
     stm.resetQueue();
-    stm.enable();
+    if (wasRecording) stm.enable();
     this.glowing.clear();
+    // The conversation is about the week that's gone: the assistant shouldn't remember it, and its undo no longer applies.
+    (scheduler.features.ai as unknown as { chatPanel?: { tools?: { clearChat?: { element?: HTMLElement } } } }).chatPanel?.tools?.clearChat?.element?.click();
     this.notify();
     this.repaint();
   }
