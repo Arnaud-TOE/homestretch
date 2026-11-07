@@ -348,9 +348,18 @@ export default function ShiftScheduler({ board, dock, onPay, onNotify }: { board
     const instance = scheduler.current?.instance as Scheduler | undefined;
     if (!instance) return;
     const detach = board.attach(instance);
-    (instance.features.ai as unknown as { chatPanel: { show(): void } }).chatPanel.show();
-    return detach;
-  }, [board]);
+    const chat = (instance.features.ai as unknown as { chatPanel: { show(): void; onMessageEnter(): void } }).chatPanel;
+    chat.show();
+    // Bryntum puts a suggestion in the box when it's clicked. Here it asks right away, since the suggestions are the way into the demo.
+    const askNow = (event: MouseEvent) => {
+      if ((event.target as Element).closest('.b-example-prompt')) chat.onMessageEnter();
+    };
+    dock.addEventListener('click', askNow);
+    return () => {
+      dock.removeEventListener('click', askNow);
+      detach();
+    };
+  }, [board, dock]);
 
   return <BryntumScheduler ref={scheduler} {...(config as object)} />;
 }

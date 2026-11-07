@@ -269,6 +269,30 @@ a.crew-name:hover {
   display: none !important;
 }
 
+/* Bryntum's suggestions read as grey hints; these are the way into the demo, so they look like buttons. */
+.chat-dock .b-chat-panel-mixin.b-panel .b-example-prompt {
+  width: fit-content;
+  margin: 0.5rem auto 0;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 0.875rem;
+  font-style: normal;
+  font-weight: 500;
+  opacity: 1;
+}
+
+.chat-dock .b-chat-panel-mixin.b-panel .b-example-prompt:hover {
+  background: var(--wash);
+}
+
+.chat-dock .b-chat-panel-mixin.b-panel .b-example-prompt::before,
+.chat-dock .b-chat-panel-mixin.b-panel .b-example-prompt::after {
+  content: none;
+}
+
 /* ---------- notices */
 
 .notice {
