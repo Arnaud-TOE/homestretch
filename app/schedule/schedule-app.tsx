@@ -54,17 +54,17 @@ export default function ScheduleApp() {
           <Logo className="size-6" />
           Homestretch
         </Link>
-        <span className="text-sm text-[var(--muted)]">{BUSINESS}</span>
+        <span className="whitespace-nowrap text-sm text-[var(--muted)]">{BUSINESS}</span>
         <dl className="ml-auto flex items-center gap-6 text-sm">
           <Stat label="Open shifts" value={String(view.open)} />
           <Stat label="To approve" value={usd(view.readyTotal)} tone={view.readyTotal > 0 ? 'amber' : undefined} />
           <Stat label="Paid today" value={usd(paidToday.reduce((sum, entry) => sum + entry.amount, 0))} tone={paidToday.length > 0 ? 'green' : undefined} />
           {view.balance !== null && <Stat label="PayPal balance" value={usd(view.balance)} />}
         </dl>
-        <span className="rounded-full border border-[var(--line)] px-2.5 py-1 text-xs text-[var(--muted)]" title="Every payment here runs on the PayPal sandbox. No real money moves.">
+        <span className="whitespace-nowrap rounded-full border border-[var(--line)] px-2.5 py-1 text-xs text-[var(--muted)]" title="Every payment here runs on the PayPal sandbox. No real money moves.">
           PayPal sandbox
         </span>
-        <button type="button" onClick={() => board.reset()} className="rounded-md px-2 py-1 text-sm text-[var(--muted)] hover:bg-[var(--wash)] hover:text-[var(--ink)]">
+        <button type="button" onClick={() => board.reset()} className="whitespace-nowrap rounded-md px-2 py-1 text-sm text-[var(--muted)] hover:bg-[var(--wash)] hover:text-[var(--ink)]">
           Reset demo
         </button>
         <button
@@ -79,7 +79,7 @@ export default function ScheduleApp() {
 
       <main className="flex min-h-0 flex-1">
         <div className="relative min-w-0 flex-1">{dock && <ShiftScheduler board={board} dock={dock} onPay={pay} onNotify={say} />}</div>
-        <aside ref={setDock} className={`chat-dock w-[22rem] shrink-0 border-l border-[var(--line)] bg-white ${assistantOpen ? '' : 'hidden'}`} aria-label="Assistant" />
+        <aside ref={setDock} className={`chat-dock w-80 shrink-0 border-l border-[var(--line)] bg-white ${assistantOpen ? '' : 'hidden'}`} aria-label="Assistant" />
       </main>
 
       <PayPanel board={board} view={view} open={panelOpen} onToggle={() => setPanelOpen((value) => !value)} tab={tab} onTab={setTab} />
@@ -103,7 +103,7 @@ export default function ScheduleApp() {
 function Stat({ label, value, tone }: { label: string; value: string; tone?: 'amber' | 'green' }) {
   const color = tone === 'amber' ? 'text-amber-700' : tone === 'green' ? 'text-emerald-700' : '';
   return (
-    <div className="flex items-baseline gap-1.5">
+    <div className="flex items-baseline gap-1.5 whitespace-nowrap">
       <dt className="text-[var(--muted)]">{label}</dt>
       <dd className={`font-semibold tabular-nums ${color}`}>{value}</dd>
     </div>

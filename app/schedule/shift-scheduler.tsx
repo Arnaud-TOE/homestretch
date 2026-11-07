@@ -221,7 +221,7 @@ function buildConfig(board: Board, dock: HTMLElement, actions: { pay: (shiftId: 
         id: 'crew',
         text: 'Crew',
         field: 'name',
-        width: 262,
+        width: 240,
         sortable: false,
         groupable: false,
         draggable: false,

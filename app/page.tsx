@@ -59,7 +59,7 @@ export default function Home() {
               Open the schedule
             </Link>
             <Link href="/crew/theo" className="rounded-lg border border-[var(--line)] bg-white px-5 py-3 font-semibold hover:bg-[var(--wash)]">
-              See a worker\u2019s phone
+              See a worker&rsquo;s phone
             </Link>
           </div>
           <p className="mt-4 text-sm text-[var(--muted)]">Runs on the PayPal sandbox. No real money moves, and the crew is fictional.</p>
