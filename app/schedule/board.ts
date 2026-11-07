@@ -3,7 +3,9 @@
 // `Schedule` for the rules, applies the assistant's changes, keeps the record of payments and
 // tells React when something changed.
 
-import { EventModel, ResourceModel, type ColumnStore, type ResourceTimeRangeStore, type Scheduler, type StateTrackingManager } from '@bryntum/scheduler';
+import type { StateTrackingManager } from '@bryntum/core-enterprise';
+import type { ColumnStore } from '@bryntum/grid-enterprise';
+import { EventModel, ResourceModel, type ResourceTimeRangeStore, type Scheduler } from '@bryntum/scheduler-enterprise';
 import type { Effects } from '@/lib/schedule/agent';
 import { demoSchedule, TIMELINE, WORKERS } from '@/lib/schedule/demo';
 import { isReadyToPay, shiftHours, shiftPay } from '@/lib/schedule/rules';

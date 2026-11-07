@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { BryntumScheduler } from '@bryntum/scheduler-react';
-import { AIHelper, OpenAIPlugin, StringHelper, type EventModel, type Model, type ResourceModel, type Scheduler } from '@bryntum/scheduler';
+import { BryntumScheduler } from '@bryntum/scheduler-react-enterprise';
+import { AIHelper, OpenAIPlugin, StringHelper, type Model } from '@bryntum/core-enterprise';
+import type { EventModel, ResourceModel, Scheduler } from '@bryntum/scheduler-enterprise';
 import { AGENT_TOOLS } from '@/lib/schedule/agent';
 import { AGENT_EXAMPLES } from '@/lib/schedule/agent-examples';
 import { DEFAULT_MODEL } from '@/lib/assistant';
@@ -11,6 +12,11 @@ import { describeShift, shiftHours, shiftPay, shiftState, upcomingHours, whyNot 
 import type { Shift, Skill, Worker } from '@/lib/schedule/types';
 import { wallClock } from '@/lib/schedule/wall-clock';
 import { CrewMember, OPEN_ROW, ShiftEvent, toEventData, toRangeData, type Board } from './board';
+
+// A trial key from bryntum.com/download covers every visitor until its end date. Without one, Bryntum
+// gives each browser 14 days from its first visit. Either way the component shows its Trial badge.
+const licenseKey = process.env.NEXT_PUBLIC_BRYNTUM_LICENSE_KEY;
+if (licenseKey) ((globalThis as unknown as { bryntum?: { licenseKey?: string } }).bryntum ??= {}).licenseKey = licenseKey;
 
 const SKILL_COLORS: Record<Skill, string> = {
   Cook: 'orange',

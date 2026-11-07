@@ -1,0 +1,8 @@
+#!/bin/sh
+# Nothing leaves this machine unless the checks CI runs pass here first.
+# `npm install` turns this hook on (see "prepare" in package.json).
+set -e
+echo "pre-push: running lint, types and tests"
+npm run --silent lint
+npm run --silent typecheck
+npm test --silent

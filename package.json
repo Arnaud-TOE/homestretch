@@ -8,11 +8,14 @@
     "start": "next start -p 3001",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prepare": "git config core.hooksPath .githooks || exit 0"
   },
   "dependencies": {
-    "@bryntum/scheduler": "npm:@bryntum/scheduler-trial@^7.3.8",
-    "@bryntum/scheduler-react": "^7.3.8",
+    "@bryntum/core-enterprise": "8.0.0",
+    "@bryntum/grid-enterprise": "8.0.0",
+    "@bryntum/scheduler-enterprise": "8.0.0",
+    "@bryntum/scheduler-react-enterprise": "8.0.0",
     "ag-grid-community": "^36.3.0",
     "ag-grid-react": "^36.3.0",
     "next": "^16.3.6",

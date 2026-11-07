@@ -53,7 +53,7 @@ No sign-in. Open `/schedule`. Everything you change stays in your browser, and a
 
 ## How we use Bryntum and AG Grid
 
-- **Bryntum Scheduler:** the crew and an open row as resources, with a slimmer row height for the open row; shifts as a custom event model; blocked time as resource time ranges; night hours hidden with `workingTime`; a current-time line; drag validation that shows the rule's own message; a custom event menu and tooltip; and the **AI feature** with `OpenAIPlugin`, custom tools, training data, undo and redo, in a panel docked beside the schedule.
+- **Bryntum Scheduler 8:** the crew and an open row as resources, with a slimmer row height for the open row; shifts as a custom event model; blocked time as resource time ranges; night hours hidden with `workingTime`; a current-time line; drag validation that shows the rule's own message; a custom event menu and tooltip; and the **AI feature** with `OpenAIPlugin`, custom tools, training data, undo and redo, in a panel docked beside the schedule.
 - **AG Grid Community:** the PayPal ledger, one row per payment, updating as PayPal answers.
 
 ## Architecture
@@ -101,8 +101,8 @@ CI (`.github/workflows/ci.yml`) runs all three on every push. `/api/health` on a
 - PayPal's balance figure refreshes every so often, so the screen takes payments sent since then off it.
 - Payments carry the hours the schedule says. There's no time clock yet.
 - The public demo has a daily budget for the assistant and for payouts. When one is used up, the app says so until the next day.
-- The Bryntum package is the public trial, so its watermark shows. Bryntum's AI feature is in its Enterprise tier.
+- Bryntum's AI feature is in its Enterprise tier, so this runs that tier on its free trial, and Bryntum's small Trial badge shows in the corner of the schedule.
 
 ## License
 
-The code in this repository is [MIT](LICENSE). Bryntum Scheduler and its trial package have their own license terms.
+The code in this repository is [MIT](LICENSE). Bryntum Scheduler's Enterprise tier has its own license terms.

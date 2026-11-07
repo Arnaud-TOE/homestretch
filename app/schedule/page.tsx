@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
-import '@bryntum/scheduler/scheduler.css';
-import '@bryntum/scheduler/svalbard-light.css';
-import '@bryntum/scheduler/fontawesome/css/fontawesome.css';
-import '@bryntum/scheduler/fontawesome/css/solid.css';
+import '@bryntum/scheduler-enterprise/scheduler.css';
+import '@bryntum/scheduler-enterprise/svalbard-light.css';
+import '@bryntum/core-enterprise/fontawesome/css/fontawesome.css';
+import '@bryntum/core-enterprise/fontawesome/css/solid.css';
 import './schedule.css';
 import { ScheduleLoader } from './loader';
 
