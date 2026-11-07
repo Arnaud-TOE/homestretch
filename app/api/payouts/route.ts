@@ -28,6 +28,6 @@ export async function POST(request: Request) {
   } catch (cause) {
     console.error('[payouts] PayPal refused the batch', cause instanceof PayPalApiError ? cause.body : cause);
     if (cause instanceof PayPalApiError && cause.body.includes('INSUFFICIENT_FUNDS')) return error(402, 'The sandbox account behind this demo is out of funds, so nobody was paid.');
-    return error(502, 'PayPal could not send this payment. Nobody has been paid.');
+    return error(502, "PayPal didn't accept this payment, so it is still waiting for your approval. Please try again.");
   }
 }

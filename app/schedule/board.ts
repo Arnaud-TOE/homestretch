@@ -327,7 +327,7 @@ export class Board {
       const body = await response.json().catch(() => ({}));
       if (!response.ok) {
         removeEntries();
-        this.tell('error', body.error ?? 'PayPal could not send this payment. Nobody has been paid.');
+        this.tell('error', body.error ?? "PayPal didn't accept this payment, so it is still waiting for your approval. Please try again.");
         return;
       }
       const sent = entries.map((entry) => ({ ...entry, batchId: body.batchId, status: body.status ?? 'PENDING' }));
@@ -337,7 +337,7 @@ export class Board {
       void this.watch(body.batchId);
     } catch {
       removeEntries();
-      this.tell('error', "Couldn't reach the server, so nobody has been paid. Try again.");
+      this.tell('error', "Couldn't reach the server, so this payment is still waiting for your approval. Please try again.");
     }
   }
 

@@ -32,7 +32,7 @@ async function accessToken(): Promise<string> {
   return access_token;
 }
 
-async function request<T>(method: 'GET' | 'POST', path: string, body?: unknown): Promise<T> {
+async function request<T>(method: 'GET' | 'POST', path: string, body?: unknown, { safeToRepeat = method === 'GET' } = {}): Promise<T> {
   for (let attempt = 1; ; attempt++) {
     const res = await fetch(`${BASE_URL}${path}`, {
       method,
@@ -51,8 +51,8 @@ async function request<T>(method: 'GET' | 'POST', path: string, body?: unknown):
       cachedToken = undefined;
       continue;
     }
-    // A POST that failed with a 5xx may still have gone through, so only reads retry those.
-    const retriable = res.status === 429 || (method === 'GET' && res.status >= 500);
+    // A write that failed with a 5xx may still have gone through, so only what can safely be repeated retries those.
+    const retriable = res.status === 429 || (safeToRepeat && res.status >= 500);
     if (retriable && attempt < MAX_ATTEMPTS) {
       await new Promise((resolve) => setTimeout(resolve, 2 ** attempt * 250));
       continue;
@@ -83,7 +83,7 @@ export async function createPayoutBatch(batchKey: string, receiver: string, item
       note: item.note,
       amount: { value: item.amount.toFixed(2), currency: 'USD' },
     })),
-  });
+  }, { safeToRepeat: true });
   return { batchId: header.payout_batch_id, status: header.batch_status };
 }
 
