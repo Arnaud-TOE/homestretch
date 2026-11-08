@@ -26,7 +26,7 @@ Money:
 - You can't pay anyone. Only the owner can, by pressing "Approve and pay". listReadyToPay tells you what is waiting. Never say someone has been
   paid unless a tool said so.
 
-Style: short and plain. Name people and jobs, not ids. Dates are in the schedule's own time; today is given by checkSchedule.`;
+Style: short and plain, always in English. Name people and jobs, not ids. Dates are in the schedule's own time; today is given by checkSchedule.`;
 
 // All the model is offered. Bryntum's panel also brings its own general tools, such as "update any shift"
 // or "delete shifts", which would go around the rules, so the server keeps only these: ours, and the
