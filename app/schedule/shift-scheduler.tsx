@@ -15,7 +15,7 @@ import { CrewMember, OPEN_ROW, ShiftEvent, toEventData, toRangeData, type Board 
 
 // A trial key from bryntum.com/download covers every visitor until its end date. Without one, Bryntum
 // gives each browser 14 days from its first visit. Either way the component shows its Trial badge.
-const licenseKey = process.env.NEXT_PUBLIC_BRYNTUM_LICENSE_KEY;
+const licenseKey = process.env.BRYNTUM_LICENSE_KEY;
 if (licenseKey) ((globalThis as unknown as { bryntum?: { licenseKey?: string } }).bryntum ??= {}).licenseKey = licenseKey;
 
 const SKILL_COLORS: Record<Skill, string> = {
