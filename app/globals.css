@@ -37,3 +37,9 @@ body {
     animation: none;
   }
 }
+
+/* The front page's loop; a still for people who prefer less motion. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-video { display: none; }
+  .hero-still { display: block; }
+}

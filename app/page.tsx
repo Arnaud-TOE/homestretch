@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Logo } from '@/components/logo';
+import { HeroVideo } from '@/components/hero-video';
 import { WarmUpSchedule } from './warm-up-schedule';
 
 export const metadata: Metadata = {
@@ -67,7 +67,7 @@ export default function Home() {
           <p className="mt-4 text-sm text-[var(--muted)]">Runs on the PayPal sandbox. No real money moves, and the crew is fictional.</p>
 
           <div className="mt-12 overflow-hidden rounded-2xl border border-[var(--line)] shadow-xl">
-            <Image src="/app.png" alt="The Homestretch schedule: a crew of eight, shifts on a timeline, an assistant panel and finished shifts waiting for approval" width={2880} height={1800} priority className="h-auto w-full" />
+            <HeroVideo />
           </div>
         </section>
 
