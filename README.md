@@ -10,7 +10,7 @@ Built for the [PayPal AI Hackathon 2026](https://paypalaihackathon.devpost.com/)
 
 | | |
 |---|---|
-| Live demo | _added at submission_ |
+| Live demo | [homestretch-three.vercel.app](https://homestretch-three.vercel.app) |
 | Demo video | _added at submission_ |
 
 ![The schedule: the crew on the left, shifts on a timeline, the assistant on the right and finished shifts waiting for approval below](public/app.png)
