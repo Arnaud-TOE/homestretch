@@ -1,5 +1,6 @@
 import { assistantSays, BUDGET_USED_UP, DEFAULT_MODEL, dropForbiddenCalls, SCHEDULING_INSTRUCTIONS, shapeForModel } from '@/lib/assistant';
 import { isSameOrigin, modelCallRefusal } from '@/lib/guard';
+import { logUsage } from '@/lib/model-usage';
 
 // The proxy behind the Scheduler's AI panel. Bryntum's OpenAI plugin posts a Chat Completions request
 // here; this adds the key, which never reaches the browser, and our instructions, which the
@@ -36,5 +37,6 @@ export async function POST(request: Request) {
     console.error('[assistant] the model request failed', upstream.status, answer?.error?.message);
     return say("The model didn't answer that one. Please try again in a moment.");
   }
+  logUsage(answer?.usage);
   return Response.json(dropForbiddenCalls(answer));
 }

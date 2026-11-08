@@ -27,9 +27,10 @@ export class CallLimiter {
 
 const visitorOf = (request: Request) => request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'local';
 
-// The assistant calls the model several times per question, so these count model calls.
-const modelPerVisitor = new CallLimiter(Number(process.env.AI_CALLS_PER_VISITOR) || 120, WINDOW_MS);
-const modelPerDay = new CallLimiter(Number(process.env.AI_CALLS_PER_DAY) || 600, DAY_MS);
+// The assistant calls the model several times per question, so these count model calls. The demo runs on
+// a small prepaid budget: a full tour (the three suggestions and a few more questions) takes about 18 calls.
+const modelPerVisitor = new CallLimiter(Number(process.env.AI_CALLS_PER_VISITOR) || 40, WINDOW_MS);
+const modelPerDay = new CallLimiter(Number(process.env.AI_CALLS_PER_DAY) || 80, DAY_MS);
 
 export function modelCallRefusal(request: Request): string | null {
   if (!modelPerVisitor.hit(visitorOf(request))) return 'The demo limits how much one visitor can ask the assistant in ten minutes. Please try again in a few minutes.';
