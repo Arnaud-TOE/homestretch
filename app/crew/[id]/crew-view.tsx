@@ -10,6 +10,18 @@ import { dayKey, wallClock } from '@/lib/schedule/wall-clock';
 
 const usd = (amount: number) => `$${amount.toFixed(2)}`;
 
+// The same colours as the crew column on the schedule.
+const AVATAR_COLORS = ['#b4532a', '#1f6f8b', '#6b4fa0', '#2f7d4f', '#a13d63', '#8a6d1f', '#3c5ba9', '#0f766e'];
+const initials = (name: string) => name.split(' ').map((part) => part[0]).join('').slice(0, 2);
+
+const untilStart = (iso: string, now: Date) => {
+  const hours = Math.round((Date.parse(iso) - now.getTime()) / 3_600_000);
+  if (hours < 1) return 'starting soon';
+  if (hours < 24) return `in ${hours} h`;
+  const days = Math.round(hours / 24);
+  return days === 1 ? 'tomorrow' : `in ${days} days`;
+};
+
 const dayAndHours = (shift: Shift) => {
   const zone = { timeZone: 'UTC' } as const;
   const day = new Date(shift.start).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', ...zone });
@@ -69,7 +81,11 @@ export default function CrewView({ workerId }: { workerId: string }) {
   const waiting = mine.filter((shift) => shiftState(shift, now) === 'finished');
   const upcoming = mine.filter((shift) => shiftState(shift, now) === 'upcoming');
   const paidTotal = paid.reduce((sum, shift) => sum + (shift.payment?.amount ?? 0), 0);
+  const toCome = sumPay(waiting.concat(onItsWay), worker.hourlyRate);
   const first = worker.name.split(' ')[0];
+  const color = AVATAR_COLORS[WORKERS.indexOf(worker) % AVATAR_COLORS.length];
+  const [next, ...later] = upcoming;
+  const paidShare = paidTotal + toCome > 0 ? paidTotal / (paidTotal + toCome) : 0;
 
   return (
     <div className="mx-auto min-h-dvh max-w-md bg-[var(--paper)] pb-10 text-[var(--ink)]">
@@ -88,22 +104,57 @@ export default function CrewView({ workerId }: { workerId: string }) {
       <header className="flex items-center gap-2 px-5 pt-5 text-sm text-[var(--muted)]">
         <Logo className="size-5" />
         Homestretch
-        <span className="ml-auto text-xs">Sandbox demo</span>
+        <span className="ml-auto rounded-full border border-[var(--line)] bg-white px-2.5 py-0.5 text-xs">Sandbox demo</span>
       </header>
 
-      <section className="px-5 pt-6">
-        <p className="font-display text-2xl font-semibold tracking-tight">Hi {first}</p>
-        <div className="mt-4 rounded-2xl bg-[var(--brand)] p-5 text-white">
-          <p className="text-sm opacity-85">Paid by {BUSINESS}</p>
-          <p className="mt-1 font-display text-4xl font-semibold tabular-nums">{usd(paidTotal)}</p>
-          <p className="mt-2 text-sm opacity-85">
-            {waiting.length + onItsWay.length === 0 ? 'Nothing waiting.' : `${usd(sumPay(waiting.concat(onItsWay), worker.hourlyRate))} still to come for finished shifts.`}
+      <section className="rise-in px-5 pt-6">
+        <div className="flex items-center gap-3">
+          <span className="grid size-12 place-items-center rounded-full text-base font-bold text-white shadow-md" style={{ background: color }}>
+            {initials(worker.name)}
+          </span>
+          <div>
+            <p className="font-display text-2xl font-semibold leading-tight tracking-tight">Hi {first}</p>
+            <p className="text-sm text-[var(--muted)]">
+              {worker.skills.join(' · ')} at {BUSINESS}
+            </p>
+          </div>
+        </div>
+
+        <div className="pay-card relative mt-5 overflow-hidden rounded-3xl p-5 text-white shadow-xl shadow-[var(--brand)]/25">
+          <p className="text-sm opacity-85">Paid to you through PayPal</p>
+          <p className="mt-1 font-display text-5xl font-semibold tabular-nums">{usd(paidTotal)}</p>
+          <span className="mt-4 block h-2 overflow-hidden rounded-full bg-white/20">
+            <span className="block h-full rounded-full bg-white transition-[width] duration-700" style={{ width: `${Math.round(paidShare * 100)}%` }} />
+          </span>
+          <p className="mt-3 text-sm opacity-90">
+            {toCome === 0 ? 'Nothing waiting. Every finished shift is paid.' : `${usd(toCome)} still to come for finished shifts.`}
           </p>
         </div>
       </section>
 
-      <Group title="On its way" shifts={onItsWay} render={(shift) => <Row key={shift.id} shift={shift} right={usd(shift.payment?.amount ?? 0)} note="PayPal is processing it" />} />
-      <Group title="Waiting for approval" shifts={waiting} render={(shift) => <Row key={shift.id} shift={shift} right={usd(shiftPay(shift, worker))} note={`${shiftHours(shift)} h at $${worker.hourlyRate}`} />} />
+      {next && (
+        <section className="rise-in px-5 pt-5">
+          <div className="flex items-center gap-3 rounded-2xl border border-[var(--line)] bg-white p-4">
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-amber-100 text-amber-700" aria-hidden>
+              <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v5l3 2" />
+              </svg>
+            </span>
+            <span className="min-w-0 flex-1 text-sm">
+              <span className="block text-xs font-semibold uppercase tracking-wide text-amber-700">Next shift, {untilStart(next.start, now)}</span>
+              <span className="block truncate font-semibold">
+                {next.skill} · {next.job}
+              </span>
+              <span className="block text-[var(--muted)]">{dayAndHours(next)}</span>
+            </span>
+            <span className="shrink-0 font-semibold tabular-nums">{usd(shiftPay(next, worker))}</span>
+          </div>
+        </section>
+      )}
+
+      <Group title="On its way" shifts={onItsWay} render={(shift) => <Row key={shift.id} shift={shift} right={usd(shift.payment?.amount ?? 0)} note="PayPal is processing it" tone="paying" />} />
+      <Group title="Waiting for approval" shifts={waiting} render={(shift) => <Row key={shift.id} shift={shift} right={usd(shiftPay(shift, worker))} note={`${shiftHours(shift)} h at $${worker.hourlyRate}`} tone="waiting" />} />
       <Group
         title="Paid"
         shifts={paid}
@@ -112,7 +163,7 @@ export default function CrewView({ workerId }: { workerId: string }) {
           return <Row key={shift.id} shift={shift} right={usd(shift.payment?.amount ?? 0)} note={entry ? `Paid at ${sentAt(entry.sentAt)}${entry.transactionId ? ` · PayPal ${entry.transactionId}` : ''}` : 'Paid'} tone="paid" />;
         }}
       />
-      <Group title="Coming up" shifts={upcoming} render={(shift) => <Row key={shift.id} shift={shift} right={usd(shiftPay(shift, worker))} note={shift.why} />} />
+      <Group title="Coming up" shifts={later} render={(shift) => <Row key={shift.id} shift={shift} right={usd(shiftPay(shift, worker))} note={shift.why} tone="upcoming" />} />
     </div>
   );
 }
@@ -123,15 +174,28 @@ function Group({ title, shifts, render }: { title: string; shifts: Shift[]; rend
   if (shifts.length === 0) return null;
   return (
     <section className="px-5 pt-6">
-      <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">{title}</h2>
-      <ul className="mt-2 divide-y divide-[var(--line)] rounded-2xl border border-[var(--line)] bg-white">{shifts.map(render)}</ul>
+      <h2 className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+        {title}
+        <span className="rounded-full bg-[var(--wash)] px-2 py-0.5 tabular-nums">{shifts.length}</span>
+      </h2>
+      <ul className="mt-2 divide-y divide-[var(--line)] overflow-hidden rounded-2xl border border-[var(--line)] bg-white shadow-sm">{shifts.map(render)}</ul>
     </section>
   );
 }
 
-function Row({ shift, right, note, tone }: { shift: Shift; right: string; note?: string; tone?: 'paid' }) {
+const TONES = {
+  paid: { mark: '✓', className: 'bg-emerald-100 text-emerald-700' },
+  paying: { mark: '↗', className: 'bg-sky-100 text-sky-700' },
+  waiting: { mark: '…', className: 'bg-amber-100 text-amber-700' },
+  upcoming: { mark: '•', className: 'bg-[var(--wash)] text-[var(--muted)]' },
+} as const;
+
+function Row({ shift, right, note, tone }: { shift: Shift; right: string; note?: string; tone: keyof typeof TONES }) {
   return (
     <li className="flex items-start gap-3 px-4 py-3 text-sm">
+      <span className={`mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg text-sm font-bold ${TONES[tone].className}`} aria-hidden>
+        {TONES[tone].mark}
+      </span>
       <span className="min-w-0 flex-1">
         <span className="block font-medium">
           {shift.skill} · {shift.job}
