@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Logo } from '@/components/logo';
+import { WarmUpSchedule } from './warm-up-schedule';
 
 export const metadata: Metadata = {
   title: 'Homestretch: clock out, get paid',
@@ -47,6 +48,7 @@ export default function Home() {
         </Link>
       </nav>
 
+      <WarmUpSchedule />
       <main>
         <section className="mx-auto max-w-6xl px-6 pb-14 pt-10 md:pt-16">
           <p className="text-sm font-semibold text-[var(--brand)]">For small teams paid by the hour</p>
