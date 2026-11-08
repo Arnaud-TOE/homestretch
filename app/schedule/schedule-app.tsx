@@ -69,13 +69,14 @@ export default function ScheduleApp() {
   return (
     <div className="flex h-dvh flex-col bg-[var(--paper)] text-[var(--ink)]">
       <p className="bg-amber-50 px-4 py-2 text-sm text-amber-900 lg:hidden">This schedule is built for a bigger screen. On a phone, try the <Link className="underline" href="/crew/theo">worker&rsquo;s view</Link>.</p>
-      <header className="flex h-14 shrink-0 items-center gap-6 overflow-x-auto border-b border-[var(--line)] bg-white px-4">
+      <header className="relative z-10 flex h-14 shrink-0 items-center gap-6 overflow-x-auto border-b border-[var(--line)] bg-white/85 px-4 backdrop-blur-xl">
+        <span className="brand-strip" aria-hidden />
         <Link href="/" className="flex items-center gap-2 font-display text-lg font-semibold tracking-tight">
           <Logo className="size-6" />
           Homestretch
         </Link>
         <span className="whitespace-nowrap text-sm text-[var(--muted)]">{BUSINESS}</span>
-        <dl className="ml-auto flex items-center gap-6 text-sm">
+        <dl className="ml-auto flex items-center gap-2 text-sm">
           <Stat label="Open shifts" value={String(view.open)} />
           <Stat label="To approve" value={usd(view.readyTotal)} tone={view.readyTotal > 0 ? 'amber' : undefined} />
           <Stat label="Paid today" value={usd(paidToday.reduce((sum, entry) => sum + entry.amount, 0))} tone={paidToday.length > 0 ? 'green' : undefined} />
@@ -101,7 +102,7 @@ export default function ScheduleApp() {
           type="button"
           onClick={() => setAssistantOpen((value) => !value)}
           aria-pressed={assistantOpen}
-          className={`rounded-md border px-3 py-1.5 text-sm font-semibold ${assistantOpen ? 'border-[var(--line)] bg-[var(--wash)]' : 'border-[var(--brand)] text-[var(--brand)]'}`}
+          className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition ${assistantOpen ? 'border-[var(--line)] bg-[var(--wash)]' : 'assistant-glow border-transparent text-white'}`}
         >
           Assistant
         </button>
@@ -132,8 +133,9 @@ export default function ScheduleApp() {
 
 function Stat({ label, value, tone, title }: { label: string; value: string; tone?: 'amber' | 'green'; title?: string }) {
   const color = tone === 'amber' ? 'text-amber-700' : tone === 'green' ? 'text-emerald-700' : '';
+  const pill = tone === 'amber' ? 'border-amber-200 bg-amber-50' : tone === 'green' ? 'border-emerald-200 bg-emerald-50' : 'border-[var(--line)] bg-white/70';
   return (
-    <div className="flex items-baseline gap-1.5 whitespace-nowrap" title={title}>
+    <div className={`flex items-baseline gap-1.5 whitespace-nowrap rounded-full border px-3 py-1 ${pill}`} title={title}>
       <dt className="text-[var(--muted)]">{label}</dt>
       <dd className={`font-semibold tabular-nums ${color}`}>{value}</dd>
     </div>

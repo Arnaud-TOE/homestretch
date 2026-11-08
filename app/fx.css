@@ -1,0 +1,310 @@
+/*
+ * The night look of the public pages: aurora light, grain, glass, glowing cards and borders.
+ * Each project sets its own colours on the .night element:
+ *   --night (background), --glow-a, --glow-b, --glow-c (light), --accent (buttons and links).
+ */
+
+@property --beam-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.night {
+  position: relative;
+  isolation: isolate;
+  background: var(--night);
+  color: #fff;
+  color-scheme: dark;
+}
+
+.night ::selection {
+  background: color-mix(in srgb, var(--glow-a) 45%, transparent);
+}
+
+/* Aurora: three slow, blurred lights behind a section. */
+.aurora {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.aurora > i {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(90px);
+  opacity: 0.55;
+}
+
+.aurora > i:nth-child(1) {
+  width: 46rem;
+  height: 30rem;
+  left: -12rem;
+  top: -10rem;
+  background: var(--glow-a);
+}
+
+.aurora > i:nth-child(2) {
+  width: 38rem;
+  height: 26rem;
+  right: -10rem;
+  top: 2rem;
+  background: var(--glow-b);
+  opacity: 0.4;
+}
+
+.aurora > i:nth-child(3) {
+  width: 40rem;
+  height: 22rem;
+  left: 30%;
+  bottom: -14rem;
+  background: var(--glow-c);
+  opacity: 0.35;
+}
+
+/* Grain, so the gradients don't band. */
+.grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.09;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Faint lines that fade out downwards. */
+.grid-lines {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.06) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, black 30%, transparent 75%);
+}
+
+.glass {
+  background: rgb(255 255 255 / 0.045);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.glass-strong {
+  background: rgb(255 255 255 / 0.08);
+  border: 1px solid rgb(255 255 255 / 0.14);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.hairline {
+  border-color: rgb(255 255 255 / 0.1);
+}
+
+/* A card that lights up where the pointer is (components/fx.tsx sets --x and --y). */
+.spot {
+  position: relative;
+  overflow: hidden;
+  transition: transform 300ms ease, border-color 300ms ease;
+}
+
+.spot::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 300ms ease;
+  background: radial-gradient(22rem circle at var(--x, 50%) var(--y, 50%), color-mix(in srgb, var(--glow-a) 22%, transparent), transparent 60%);
+}
+
+.spot:hover::before {
+  opacity: 1;
+}
+
+.spot:hover {
+  border-color: rgb(255 255 255 / 0.2);
+  transform: translateY(-3px);
+}
+
+/* A border with a light that travels round it. */
+.beam {
+  position: relative;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--beam-fill, var(--night)), var(--beam-fill, var(--night))) padding-box,
+    conic-gradient(from var(--beam-angle), var(--beam-base, rgb(255 255 255 / 0.08)) 0deg, var(--glow-a) 60deg, var(--glow-b) 110deg, var(--beam-base, rgb(255 255 255 / 0.08)) 170deg, var(--beam-base, rgb(255 255 255 / 0.08)) 360deg) border-box;
+}
+
+/* Gradient text that slowly shimmers. */
+.shimmer-text {
+  background: linear-gradient(100deg, var(--glow-a), var(--glow-b), var(--glow-c), var(--glow-a));
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* The main call to action: bright, with a sweep of light on hover. */
+.btn-glow {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: linear-gradient(135deg, #fff, color-mix(in srgb, var(--glow-a) 25%, #fff));
+  color: var(--night);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.4), 0 10px 40px -8px color-mix(in srgb, var(--glow-a) 70%, transparent);
+  transition: transform 250ms ease, box-shadow 250ms ease;
+}
+
+.btn-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.9) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 700ms ease;
+}
+
+.btn-glow:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.6), 0 16px 50px -8px color-mix(in srgb, var(--glow-a) 85%, transparent);
+}
+
+.btn-glow:hover::after {
+  transform: translateX(120%);
+}
+
+.btn-ghost {
+  background: rgb(255 255 255 / 0.06);
+  border: 1px solid rgb(255 255 255 / 0.16);
+  color: #fff;
+  transition: background 250ms ease, transform 250ms ease;
+}
+
+.btn-ghost:hover {
+  background: rgb(255 255 255 / 0.12);
+  transform: translateY(-2px);
+}
+
+/* What it's built with, scrolling past. */
+.marquee {
+  display: flex;
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+}
+
+.marquee-row {
+  display: flex;
+  flex: none;
+  gap: 3rem;
+  padding-right: 3rem;
+  white-space: nowrap;
+}
+
+.marquee-row li {
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+  font-weight: 600;
+  color: rgb(255 255 255 / 0.55);
+}
+
+.marquee-row li::after {
+  content: '✦';
+  font-size: 0.7em;
+  color: color-mix(in srgb, var(--glow-a) 80%, #fff);
+}
+
+.marquee:hover .marquee-row {
+  animation-play-state: paused;
+}
+
+/* The big name at the bottom of the page. */
+.wordmark {
+  font-weight: 800;
+  line-height: 0.8;
+  letter-spacing: -0.06em;
+  background: linear-gradient(to bottom, rgb(255 255 255 / 0.14), rgb(255 255 255 / 0));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  user-select: none;
+}
+
+.glow-under {
+  position: absolute;
+  inset: auto 8% -3rem;
+  height: 6rem;
+  z-index: -1;
+  border-radius: 999px;
+  background: var(--glow-a);
+  filter: blur(60px);
+  opacity: 0.45;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .aurora > i:nth-child(1) { animation: aurora-a 18s ease-in-out infinite alternate; }
+  .aurora > i:nth-child(2) { animation: aurora-b 22s ease-in-out infinite alternate; }
+  .aurora > i:nth-child(3) { animation: aurora-c 20s ease-in-out infinite alternate; }
+
+  .beam {
+    animation: beam-spin 6s linear infinite;
+  }
+
+  .shimmer-text {
+    animation: shimmer 8s ease-in-out infinite alternate;
+  }
+
+  .marquee-row {
+    animation: marquee 38s linear infinite;
+  }
+
+  @supports (animation-timeline: view()) {
+    .tilt-in {
+      animation: tilt-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 35%;
+    }
+  }
+}
+
+@keyframes aurora-a {
+  to { transform: translate(14rem, 6rem) scale(1.15); }
+}
+
+@keyframes aurora-b {
+  to { transform: translate(-12rem, 8rem) scale(0.9); }
+}
+
+@keyframes aurora-c {
+  to { transform: translate(-10rem, -6rem) scale(1.2); }
+}
+
+@keyframes beam-spin {
+  to { --beam-angle: 360deg; }
+}
+
+@keyframes shimmer {
+  from { background-position: 0% 50%; }
+  to { background-position: 100% 50%; }
+}
+
+@keyframes marquee {
+  to { transform: translateX(-100%); }
+}
+
+@keyframes tilt-in {
+  from { transform: perspective(1400px) rotateX(16deg) scale(0.94); opacity: 0.6; }
+  to { transform: none; opacity: 1; }
+}

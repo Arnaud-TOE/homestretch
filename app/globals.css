@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import './fx.css';
 
 :root {
   --paper: #faf7f2;
@@ -249,4 +250,22 @@ body {
 @keyframes hs-rise {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: none; }
+}
+
+/* ---------- the schedule screen's finish */
+
+.brand-strip {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: linear-gradient(90deg, var(--brand), #10b981 45%, #f59e0b);
+}
+
+.assistant-glow {
+  background: linear-gradient(135deg, #10b981, var(--brand) 55%, #0a4f3d);
+  box-shadow: 0 8px 22px -10px rgb(13 122 95 / 0.9);
+}
+
+.assistant-glow:hover {
+  filter: brightness(1.08);
 }
