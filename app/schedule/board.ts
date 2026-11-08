@@ -94,6 +94,8 @@ export class Board {
   private panelListeners = new Set<() => void>();
   private view: View;
   private notices = 0;
+  /** Opened on a later day than the last visit. */
+  readonly returning: boolean;
   private watching = new Set<string>();
 
   constructor() {
@@ -102,6 +104,8 @@ export class Board {
     const saved = loadSaved();
     const fresh = demoSchedule(now);
     const current = saved?.day === today ? saved : null;
+    // Back on a later day: the week starts afresh, and yesterday's payments are still in the ledger.
+    this.returning = Boolean(saved && !current);
     this.initial = current ? { shifts: current.shifts, blocked: current.blocked } : { shifts: fresh.shifts, blocked: fresh.blocked };
     this.ledger = saved?.ledger ?? [];
     this.run = current?.run ?? (saved?.run ?? 0) + 1;

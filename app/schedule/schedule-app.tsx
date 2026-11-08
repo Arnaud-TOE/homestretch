@@ -15,10 +15,25 @@ const ShiftScheduler = dynamic(() => import('./shift-scheduler'), {
 
 const usd = (amount: number) => `$${amount.toLocaleString('en-US', { minimumFractionDigits: amount % 1 === 0 ? 0 : 2, maximumFractionDigits: 2 })}`;
 
+const WELCOME_ID = 1;
+
+function welcomeBack(board: Board): Notice {
+  const { ready, ledger } = board.getView();
+  const paid = ledger.filter((entry) => entry.status === 'SUCCESS').length;
+  return {
+    id: WELCOME_ID,
+    tone: 'info',
+    text:
+      `Welcome back: a new day at ${BUSINESS}. ${ready.length} finished shifts wait for your approval` +
+      (paid > 0 ? `, and your ${paid} earlier PayPal payments are still in the ledger.` : '.'),
+  };
+}
+
 export default function ScheduleApp() {
   const [board] = useState(() => new Board());
   const view = useSyncExternalStore(board.subscribe, board.getView, board.getView);
-  const [notices, setNotices] = useState<Notice[]>([]);
+  // Someone back on a later day is greeted with what is waiting; the week itself starts afresh each day.
+  const [notices, setNotices] = useState<Notice[]>(() => (board.returning ? [welcomeBack(board)] : []));
   // On a short screen the crew comes first: the panel's tab says what is waiting.
   const [panelOpen, setPanelOpen] = useState(() => window.innerHeight >= 900);
   const [tab, setTab] = useState<'ready' | 'ledger'>('ready');
@@ -32,6 +47,11 @@ export default function ScheduleApp() {
   }, []);
 
   useEffect(() => board.onNotice(addNotice), [board, addNotice]);
+  useEffect(() => {
+    if (!board.returning) return;
+    const timer = setTimeout(() => setNotices((current) => current.filter((n) => n.id !== WELCOME_ID)), 10_000);
+    return () => clearTimeout(timer);
+  }, [board]);
   useEffect(
     () =>
       board.onShowPayments(() => {
