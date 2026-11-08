@@ -59,7 +59,17 @@ export default function ScheduleApp() {
           <Stat label="Open shifts" value={String(view.open)} />
           <Stat label="To approve" value={usd(view.readyTotal)} tone={view.readyTotal > 0 ? 'amber' : undefined} />
           <Stat label="Paid today" value={usd(paidToday.reduce((sum, entry) => sum + entry.amount, 0))} tone={paidToday.length > 0 ? 'green' : undefined} />
-          {view.balance !== null && <Stat label="PayPal balance" value={usd(view.balance)} />}
+          {view.balance !== null && (
+            <Stat
+              label="PayPal balance"
+              value={usd(view.balance)}
+              title={
+                view.balanceAsOf
+                  ? `PayPal's figure from ${new Date(view.balanceAsOf).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' })}, less what was paid here since. PayPal refreshes it every few hours.`
+                  : undefined
+              }
+            />
+          )}
         </dl>
         <span className="whitespace-nowrap rounded-full border border-[var(--line)] px-2.5 py-1 text-xs text-[var(--muted)]" title="Every payment here runs on the PayPal sandbox. No real money moves.">
           PayPal sandbox
@@ -100,10 +110,10 @@ export default function ScheduleApp() {
   );
 }
 
-function Stat({ label, value, tone }: { label: string; value: string; tone?: 'amber' | 'green' }) {
+function Stat({ label, value, tone, title }: { label: string; value: string; tone?: 'amber' | 'green'; title?: string }) {
   const color = tone === 'amber' ? 'text-amber-700' : tone === 'green' ? 'text-emerald-700' : '';
   return (
-    <div className="flex items-baseline gap-1.5 whitespace-nowrap">
+    <div className="flex items-baseline gap-1.5 whitespace-nowrap" title={title}>
       <dt className="text-[var(--muted)]">{label}</dt>
       <dd className={`font-semibold tabular-nums ${color}`}>{value}</dd>
     </div>

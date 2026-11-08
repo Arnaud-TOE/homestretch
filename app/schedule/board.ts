@@ -57,6 +57,8 @@ export type View = {
   ledger: LedgerEntry[];
   /** The PayPal balance that pays for all this, once PayPal has answered. */
   balance: number | null;
+  /** When PayPal last refreshed that figure: it can be hours old, so payments made since are taken off it. */
+  balanceAsOf: string | null;
   now: Date;
 };
 
@@ -162,6 +164,7 @@ export class Board {
       open: schedule.shifts.filter((s) => !s.workerId).length,
       ledger: this.ledger,
       balance: this.balance,
+      balanceAsOf: this.reportedBalance?.asOf ?? null,
     };
   }
 
