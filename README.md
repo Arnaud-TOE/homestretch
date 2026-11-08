@@ -1,5 +1,7 @@
 # Homestretch: clock out, get paid
 
+[![CI](https://github.com/Arnaud-TOE/homestretch/actions/workflows/ci.yml/badge.svg)](https://github.com/Arnaud-TOE/homestretch/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 **61% of hourly workers skipped meals in the past year to cover expenses, and 63% would rather be paid weekly or on demand.**[^branch] The owner of a small team still builds the schedule by hand on a Sunday night, redoes it when someone calls in sick, and pays everyone two weeks later.
 
 Homestretch is a shift schedule with an assistant inside. The assistant staffs the week and repairs it when someone is out, moving as few shifts as it can and saying why. When a shift ends, the owner approves it and **PayPal Payouts** pays that person right then.
@@ -102,6 +104,10 @@ CI (`.github/workflows/ci.yml`) runs all three on every push. `/api/health` on a
 - Payments carry the hours the schedule says. There's no time clock yet.
 - The public demo has a daily budget for the assistant and for payouts. When one is used up, the app says so until the next day.
 - Bryntum's AI feature is in its Enterprise tier, so this runs that tier on its free trial, and Bryntum's small Trial badge shows in the corner of the schedule.
+
+## Credits
+
+Built from scratch during the hackathon: the first commit is from 6 November 2026. The schedule is Bryntum Scheduler, on its trial; the other libraries are listed in `package.json`.
 
 ## License
 
