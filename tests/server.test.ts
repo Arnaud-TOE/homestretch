@@ -40,8 +40,8 @@ describe('priceShifts', () => {
 });
 
 describe('shapeForModel', () => {
-  it('asks for low reasoning, which costs about half as much per answer', () => {
-    expect(shapeForModel({ messages: [{ role: 'user', content: 'Hi' }] }, DEFAULT_MODEL, 'Rules.').reasoning_effort).toBe('low');
+  it('asks for no reasoning, the only setting gpt-5.4-mini takes with tools on Chat Completions', () => {
+    expect(shapeForModel({ messages: [{ role: 'user', content: 'Hi' }] }, DEFAULT_MODEL, 'Rules.').reasoning_effort).toBe('none');
   });
 
   const body = { model: 'gpt-4-1', temperature: 0, max_tokens: 99999, messages: [{ role: 'system', content: 'From the plugin.' }, { role: 'user', content: 'Hi' }], tools: [{ type: 'function' }] };
