@@ -99,7 +99,7 @@ export default function CrewView({ workerId }: { workerId: string }) {
       </div>
       <div className="relative mx-auto max-w-md pb-10">
       {arrival && (
-        <div className="phone-notice fixed inset-x-3 top-3 z-20 mx-auto flex max-w-[26rem] items-start gap-3 rounded-2xl border border-[var(--line)] bg-white p-3 shadow-xl" role="status">
+        <div className="phone-notice fixed inset-x-3 top-3 z-20 mx-auto flex max-w-[26rem] items-start gap-3 rounded-2xl border border-white/40 bg-white p-3 text-[var(--ink)] shadow-2xl shadow-emerald-500/40" role="status">
           <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[var(--brand)] text-sm font-bold text-white">$</span>
           <span className="min-w-0 text-sm">
             <span className="block font-semibold">You just got {usd(arrival.amount)}</span>
