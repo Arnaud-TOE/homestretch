@@ -480,11 +480,14 @@
   color-scheme: dark;
 }
 
-.app-panel {
-  border-radius: 1.1rem;
-  overflow: hidden;
-  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.06), 0 24px 60px -30px rgb(0 0 0 / 0.8);
-  color-scheme: light;
+/* In the components layer, so a panel's own overflow-y-auto still makes it scroll. */
+@layer components {
+  .app-panel {
+    border-radius: 1.1rem;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.06), 0 24px 60px -30px rgb(0 0 0 / 0.8);
+    color-scheme: light;
+  }
 }
 
 .live-pill {
