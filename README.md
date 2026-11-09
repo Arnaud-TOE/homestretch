@@ -100,7 +100,7 @@ CI (`.github/workflows/ci.yml`) runs all three on every push. `/api/health` on a
 
 - It runs on the PayPal **sandbox** only, and every payment goes to one test account, because the crew is fictional.
 - There is no database and no sign-in: each browser holds its own copy of the week, and the phone view reads that same copy. A real version would keep approvals on a server, which would also let it refuse to pay the same shift twice from two browsers. Here, a browser won't pay a shift it has already paid, and **Reset demo** starts the week over.
-- PayPal's balance figure refreshes every so often, so the screen takes payments sent since then off it.
+- PayPal's balance figure refreshes every so often, so the screen takes payments sent since then off it. The Balances API also ignores a sandbox balance edited by hand: this demo account was topped up from $5,000 to $100,000 on PayPal's site, so `lib/paypal.ts` adds that $95,000 back for this one account, and the balance's tooltip says so.
 - Payments carry the hours the schedule says. There's no time clock yet.
 - The public demo has a daily budget for the assistant and for payouts. When one is used up, the app says so until the next day.
 - Bryntum's AI feature is in its Enterprise tier, so this runs that tier on its free trial, and Bryntum's small Trial badge shows in the corner of the schedule.

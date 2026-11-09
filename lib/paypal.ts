@@ -122,13 +122,26 @@ export async function getPayoutBatch(batchId: string): Promise<{ status: string;
   };
 }
 
-/** What the account can pay out, in dollars. PayPal refreshes this figure every so often: `asOf` says when it last did. */
-export async function getAvailableBalance(): Promise<{ available: number; asOf: string }> {
-  const answer = await request<{ as_of_time?: string; balances?: { currency: string; available_balance?: { value?: string } }[] }>('GET', '/v1/reporting/balances?currency_code=USD');
+// PayPal's Balances API adds up from what a sandbox account started with and ignores a balance edited by hand
+// on the sandbox site. The demo account was set to $100,000 there from its original $5,000, so the API stays
+// exactly this much below the account page. Added back for this one account only, and said so on screen.
+const SANDBOX_TOP_UPS: Readonly<Record<string, number>> = { FAVR2H6TABYWL: 95_000 };
+
+type BalancesAnswer = { account_id?: string; as_of_time?: string; balances?: { currency: string; available_balance?: { value?: string } }[] };
+export type AvailableBalance = { available: number; asOf: string; toppedUp: number };
+
+export function readBalance(answer: BalancesAnswer, now = new Date()): AvailableBalance {
+  const toppedUp = SANDBOX_TOP_UPS[answer.account_id ?? ''] ?? 0;
   return {
-    available: Number(answer.balances?.find((b) => b.currency === 'USD')?.available_balance?.value ?? 0),
-    asOf: answer.as_of_time ?? new Date().toISOString(),
+    available: Number(answer.balances?.find((b) => b.currency === 'USD')?.available_balance?.value ?? 0) + toppedUp,
+    asOf: answer.as_of_time ?? now.toISOString(),
+    toppedUp,
   };
+}
+
+/** What the account can pay out, in dollars. PayPal refreshes this figure every so often: `asOf` says when it last did. */
+export async function getAvailableBalance(): Promise<AvailableBalance> {
+  return readBalance(await request<BalancesAnswer>('GET', '/v1/reporting/balances?currency_code=USD'));
 }
 
 /** Whether PayPal answers with these credentials, for the health check. */

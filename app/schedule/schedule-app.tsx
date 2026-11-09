@@ -150,7 +150,7 @@ export default function ScheduleApp() {
               value={usd(view.balance)}
               title={
                 view.balanceAsOf
-                  ? `PayPal's figure from ${new Date(view.balanceAsOf).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' })}, less what was paid here since. PayPal refreshes it every few hours.`
+                  ? `PayPal's figure from ${new Date(view.balanceAsOf).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' })}, less what was paid here since${view.balanceToppedUp > 0 ? `, plus the ${usd(view.balanceToppedUp)} this sandbox account was topped up by hand, which PayPal's API doesn't count` : ''}. PayPal refreshes it every few hours.`
                   : undefined
               }
             />

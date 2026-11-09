@@ -59,6 +59,7 @@ export type View = {
   balance: number | null;
   /** When PayPal last refreshed that figure: it can be hours old, so payments made since are taken off it. */
   balanceAsOf: string | null;
+  balanceToppedUp: number;
   now: Date;
 };
 
@@ -82,7 +83,7 @@ export class Board {
   scheduler?: Scheduler;
   ledger: LedgerEntry[];
   run: number;
-  private reportedBalance: { available: number; asOf: string } | null = null;
+  private reportedBalance: { available: number; asOf: string; toppedUp?: number } | null = null;
   /** Shifts the assistant has just moved: they glow for a moment. */
   readonly glowing = new Set<string>();
   /** What the Scheduler starts with. */
@@ -169,6 +170,7 @@ export class Board {
       ledger: this.ledger,
       balance: this.balance,
       balanceAsOf: this.reportedBalance?.asOf ?? null,
+      balanceToppedUp: this.reportedBalance?.toppedUp ?? 0,
     };
   }
 
@@ -380,7 +382,7 @@ export class Board {
   private async refreshBalance() {
     const response = await fetch('/api/balance').catch(() => null);
     if (!response?.ok) return;
-    this.reportedBalance = (await response.json()) as { available: number; asOf: string };
+    this.reportedBalance = (await response.json()) as { available: number; asOf: string; toppedUp?: number };
     this.notify();
   }
 
