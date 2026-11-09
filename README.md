@@ -13,7 +13,7 @@ Built for the [PayPal AI Hackathon 2026](https://paypalaihackathon.devpost.com/)
 | | |
 |---|---|
 | Live demo | [homestretch-three.vercel.app](https://homestretch-three.vercel.app) |
-| Demo video | _added at submission_ |
+| Demo video | [Watch on YouTube](https://youtu.be/8BGDwz-wRFs) |
 
 ![The schedule: the crew on the left, the Rivera wedding staffed by the assistant on a timeline, and the shifts ready to pay below](public/app.png)
 
