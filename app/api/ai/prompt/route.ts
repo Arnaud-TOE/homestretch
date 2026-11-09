@@ -1,4 +1,4 @@
-import { assistantSays, BUDGET_USED_UP, DEFAULT_MODEL, dropForbiddenCalls, SCHEDULING_INSTRUCTIONS, shapeForModel } from '@/lib/assistant';
+import { assistantSays, BUDGET_USED_UP, DEFAULT_MODEL, dropForbiddenCalls, keepToEnglish, SCHEDULING_INSTRUCTIONS, shapeForModel } from '@/lib/assistant';
 import { isSameOrigin, modelCallRefusal } from '@/lib/guard';
 import { logUsage } from '@/lib/model-usage';
 
@@ -38,5 +38,5 @@ export async function POST(request: Request) {
     return say("The model didn't answer that one. Please try again in a moment.");
   }
   logUsage(answer?.usage);
-  return Response.json(dropForbiddenCalls(answer));
+  return Response.json(keepToEnglish(dropForbiddenCalls(answer)));
 }

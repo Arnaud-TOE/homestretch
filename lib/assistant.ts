@@ -82,6 +82,18 @@ export const assistantSays = (content: string) => ({
 
 type ModelAnswer = { choices?: { finish_reason?: string; message?: { content?: string | null; tool_calls?: Tool[] } }[] };
 
+// Now and then the model drops a word of another language into an English sentence, whatever its instructions say.
+// Every name on this schedule is in Latin script, so letters of any other script can only be that.
+const OTHER_SCRIPT = /\s*(?:(?!\p{Script=Latin})\p{L}\p{M}*)+/gu;
+
+/** Takes out any word the model wrote in another script. */
+export function keepToEnglish<T extends ModelAnswer>(answer: T): T {
+  for (const choice of answer.choices ?? []) {
+    if (typeof choice.message?.content === 'string') choice.message.content = choice.message.content.replace(OTHER_SCRIPT, '');
+  }
+  return answer;
+}
+
 /** Holds a model to the tools it was offered: a call to anything else never reaches the browser. */
 export function dropForbiddenCalls<T extends ModelAnswer>(answer: T): T {
   for (const choice of answer.choices ?? []) {

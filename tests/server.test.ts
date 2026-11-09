@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_MODEL, dropForbiddenCalls, shapeForModel } from '@/lib/assistant';
+import { DEFAULT_MODEL, dropForbiddenCalls, keepToEnglish, shapeForModel } from '@/lib/assistant';
 import { CallLimiter, DailyBudget, isSameOrigin } from '@/lib/guard';
 import { payoutRequest, priceShifts } from '@/lib/payouts';
 import { balanceAfterPayments, withPayments, type LedgerEntry } from '@/lib/schedule/saved';
@@ -90,6 +90,22 @@ describe('the tools the model gets', () => {
   it('keeps the allowed calls of a mixed answer', () => {
     const answer = dropForbiddenCalls({ choices: [{ message: { tool_calls: [{ function: { name: 'deleteShifts' } }, { function: { name: 'checkSchedule' } }] } }] });
     expect(answer.choices[0].message.tool_calls?.map((call) => call.function?.name)).toEqual(['checkSchedule']);
+  });
+});
+
+describe('keepToEnglish', () => {
+  const said = (content: string | null) => keepToEnglish({ choices: [{ message: { content } }] }).choices[0].message.content;
+
+  it('takes out a word of another script and the space before it', () => {
+    expect(said('Staffed the Rivera wedding بالكامل.\nFilled:')).toBe('Staffed the Rivera wedding.\nFilled:');
+  });
+
+  it('leaves English alone, accents and dashes included', () => {
+    expect(said('Zoë Renée — 2 shifts moved, $144.00')).toBe('Zoë Renée — 2 shifts moved, $144.00');
+  });
+
+  it('leaves a tool call without text alone', () => {
+    expect(said(null)).toBeNull();
   });
 });
 
