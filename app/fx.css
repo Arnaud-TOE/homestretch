@@ -308,3 +308,215 @@
   from { transform: perspective(1400px) rotateX(16deg) scale(0.94); opacity: 0.6; }
   to { transform: none; opacity: 1; }
 }
+
+/* ---------- The command palette (components/command-palette.tsx) ---------- */
+
+/* In the components layer, so utilities such as hidden and md:inline-flex still win. */
+@layer components {
+  .palette-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    border-radius: 999px;
+    border: 1px solid rgb(255 255 255 / 0.12);
+    background: rgb(255 255 255 / 0.06);
+    padding: 0.4rem 0.5rem 0.4rem 0.85rem;
+    font-size: 0.85rem;
+    color: rgb(255 255 255 / 0.65);
+    transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
+  }
+  
+  .palette-trigger:hover {
+    background: rgb(255 255 255 / 0.1);
+    border-color: rgb(255 255 255 / 0.22);
+    color: #fff;
+  }
+}
+
+.palette-trigger kbd,
+.palette kbd {
+  border-radius: 6px;
+  border: 1px solid rgb(255 255 255 / 0.16);
+  background: rgb(255 255 255 / 0.06);
+  padding: 1px 6px;
+  font-family: inherit;
+  font-size: 11px;
+  color: rgb(255 255 255 / 0.6);
+  white-space: nowrap;
+}
+
+.palette-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 12vh 1rem 1rem;
+  background: rgb(2 8 8 / 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.palette {
+  width: min(640px, 100%);
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  background: rgb(10 16 16 / 0.92);
+  color: #fff;
+  color-scheme: dark;
+  box-shadow: 0 30px 80px -20px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(0 0 0 / 0.2), 0 0 60px -20px var(--palette-accent, #14b8a6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.palette-search {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.palette-search input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  outline: none;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.palette-search input::placeholder {
+  color: rgb(255 255 255 / 0.4);
+}
+
+.palette-list {
+  max-height: min(52vh, 26rem);
+  overflow-y: auto;
+  padding: 0.4rem;
+}
+
+.palette-group {
+  padding: 0.65rem 0.65rem 0.3rem;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.4);
+}
+
+.palette-item {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  border-radius: 10px;
+  padding: 0.55rem 0.65rem;
+  font-size: 0.92rem;
+  color: rgb(255 255 255 / 0.82);
+  cursor: pointer;
+}
+
+.palette-item[aria-selected='true'] {
+  background: color-mix(in srgb, var(--palette-accent, #14b8a6) 24%, transparent);
+  color: #fff;
+}
+
+.palette-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 0.08);
+  font-size: 14px;
+}
+
+.palette-item[aria-selected='true'] .palette-icon {
+  background: var(--palette-accent, #14b8a6);
+}
+
+.palette-hint {
+  font-size: 12px;
+  color: rgb(255 255 255 / 0.4);
+}
+
+.palette-empty {
+  padding: 1.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: rgb(255 255 255 / 0.5);
+}
+
+.palette-foot {
+  display: flex;
+  gap: 1rem;
+  border-top: 1px solid rgb(255 255 255 / 0.08);
+  padding: 0.6rem 1rem;
+  font-size: 11px;
+  color: rgb(255 255 255 / 0.4);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .palette {
+    animation: palette-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+}
+
+@keyframes palette-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+}
+
+/* ---------- The app frame: dark chrome round light panels ---------- */
+
+.app-frame {
+  background:
+    radial-gradient(40rem 20rem at 0% 0%, color-mix(in srgb, var(--palette-accent, #14b8a6) 22%, transparent), transparent 60%),
+    radial-gradient(30rem 16rem at 100% 0%, rgb(245 158 11 / 0.12), transparent 60%),
+    var(--frame, #04191a);
+  color-scheme: dark;
+}
+
+.app-panel {
+  border-radius: 1.1rem;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.06), 0 24px 60px -30px rgb(0 0 0 / 0.8);
+  color-scheme: light;
+}
+
+.live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  background: rgb(255 255 255 / 0.05);
+  padding: 0.2rem 0.6rem;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgb(255 255 255 / 0.7);
+  white-space: nowrap;
+}
+
+.live-pill::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #34d399;
+  box-shadow: 0 0 0 0 rgb(52 211 153 / 0.6);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .live-pill::before {
+    animation: live-pill 2s ease-out infinite;
+  }
+}
+
+@keyframes live-pill {
+  0% { box-shadow: 0 0 0 0 rgb(52 211 153 / 0.6); }
+  70%, 100% { box-shadow: 0 0 0 6px rgb(52 211 153 / 0); }
+}

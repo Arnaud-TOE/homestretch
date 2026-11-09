@@ -340,7 +340,19 @@ function buildConfig(board: Board, dock: HTMLElement, actions: { pay: (shiftId: 
   };
 }
 
-export default function ShiftScheduler({ board, dock, onPay, onNotify }: { board: Board; dock: HTMLElement; onPay: (shiftId: string) => void; onNotify: (message: string) => void }) {
+export default function ShiftScheduler({
+  board,
+  dock,
+  onPay,
+  onNotify,
+  onAskReady,
+}: {
+  board: Board;
+  dock: HTMLElement;
+  onPay: (shiftId: string) => void;
+  onNotify: (message: string) => void;
+  onAskReady?: (ask: (text: string) => void) => void;
+}) {
   const scheduler = useRef<BryntumScheduler>(null);
   const [config] = useState(() => buildConfig(board, dock, { pay: (id) => onPay(id), notify: (message) => onNotify(message) }));
 
@@ -348,8 +360,15 @@ export default function ShiftScheduler({ board, dock, onPay, onNotify }: { board
     const instance = scheduler.current?.instance as Scheduler | undefined;
     if (!instance) return;
     const detach = board.attach(instance);
-    const chat = (instance.features.ai as unknown as { chatPanel: { show(): void; onMessageEnter(): void } }).chatPanel;
+    const chat = (instance.features.ai as unknown as { chatPanel: { show(): void; onMessageEnter(): void; onTextFieldInput(event: { source: unknown }): void; messageField: { value: string } } }).chatPanel;
     chat.show();
+    onAskReady?.((text) => {
+      chat.show();
+      chat.messageField.value = text;
+      // What the panel does on typing: it enables the send button for what's in the field.
+      chat.onTextFieldInput({ source: chat.messageField });
+      chat.onMessageEnter();
+    });
     // Bryntum puts a suggestion in the box when it's clicked. Here it asks right away, since the suggestions are the way into the demo.
     const askNow = (event: MouseEvent) => {
       if ((event.target as Element).closest('.b-example-prompt')) chat.onMessageEnter();
@@ -359,6 +378,7 @@ export default function ShiftScheduler({ board, dock, onPay, onNotify }: { board
       dock.removeEventListener('click', askNow);
       detach();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- set up once per board and dock
   }, [board, dock]);
 
   return <BryntumScheduler ref={scheduler} {...(config as object)} />;
