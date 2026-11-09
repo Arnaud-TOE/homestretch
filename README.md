@@ -15,7 +15,7 @@ Built for the [PayPal AI Hackathon 2026](https://paypalaihackathon.devpost.com/)
 | Live demo | [homestretch-three.vercel.app](https://homestretch-three.vercel.app) |
 | Demo video | _added at submission_ |
 
-![The schedule: the crew on the left, shifts on a timeline, the assistant on the right and finished shifts waiting for approval below](public/app.png)
+![The schedule: the crew on the left, the Rivera wedding staffed by the assistant on a timeline, and the shifts ready to pay below](public/app.png)
 
 ## TL;DR for judges
 
@@ -95,6 +95,10 @@ npm test
 ```
 
 CI (`.github/workflows/ci.yml`) runs all three on every push. `/api/health` on a running deployment says whether PayPal answers and what is configured, without showing any value.
+
+## Fast to drive
+
+Ctrl K (⌘K on a Mac) opens a command palette on the schedule: the assistant's prompts, the shifts ready to pay, the PayPal ledger, each worker's phone. "Approve all" presses the panel's own button, so its confirmation still comes first.
 
 ## What it doesn't do (yet)
 

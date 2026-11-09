@@ -34,7 +34,7 @@ function PhoneNotice() {
       <Logo className="size-10 drop-shadow-[0_0_14px_rgb(16_185_129_/_0.6)]" />
       <h1 className="text-balance mt-4 font-display text-3xl font-bold tracking-tight">The schedule needs a bigger screen</h1>
       <p className="mt-3 max-w-sm text-white/65">Open this page on a laptop to staff the week and talk to the assistant. On a phone, see what a worker sees.</p>
-      <Image src="/app.png" width={2880} height={1800} sizes="100vw" alt="The Homestretch schedule: a crew of eight, shifts on a timeline and an assistant panel" className="mt-6 w-full max-w-md rounded-xl ring-1 ring-white/15 shadow-2xl shadow-emerald-500/20" />
+      <Image src="/app.png" width={2560} height={1440} sizes="100vw" alt="The Homestretch schedule: a crew of eight, shifts on a timeline and an assistant panel" className="mt-6 w-full max-w-md rounded-xl ring-1 ring-white/15 shadow-2xl shadow-emerald-500/20" />
       <Link href="/crew/theo" className="btn-glow mt-7 rounded-full px-6 py-3 font-bold">
         See a worker&rsquo;s phone
       </Link>
